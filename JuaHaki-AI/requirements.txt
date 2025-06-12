@@ -1,0 +1,6 @@
+cohere
+PyMuPDF
+faiss-cpu
+python-dotenv
+numpy
+sentence-transformers
