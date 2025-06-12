@@ -1,172 +1,301 @@
 import os
+import asyncio
+import google.generativeai as genai
 import cohere
 from dotenv import load_dotenv
-from typing import Optional, Dict
+from typing import Optional, Dict, List, Tuple
+import logging
 from .retriever import CivilRightsRetriever
+from .context_validator import ContextValidator, ContextRelevance
+from .exceptions import ChatbotError, InitializationError, APIError
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
 class CivilRightsChatbot:
     def __init__(self, embeddings_dir: str = "embeddings"):
-        api_key = os.getenv('COHERE_API_KEY')
-        if not api_key:
-            raise ValueError("COHERE_API_KEY not found in environment variables")
+        """Initialize the Civil Rights Chatbot."""
+        try:
+            cohere_api_key = os.getenv('COHERE_API_KEY')
+            if not cohere_api_key:
+                raise InitializationError("COHERE_API_KEY not found in environment variables")
+            
+            gemini_api_key = os.getenv('GEMINI_API_KEY')
+            if not gemini_api_key:
+                raise InitializationError("GEMINI_API_KEY not found in environment variables")
+            
+            self.cohere_client = cohere.Client(cohere_api_key)
+            genai.configure(api_key=gemini_api_key)
+            self.gemini_model = genai.GenerativeModel('gemini-1.5-flash')
+            
+            self.retriever = CivilRightsRetriever(embeddings_dir)
+            self.context_validator = ContextValidator()
+            self.is_ready = False
+            self.conversation_history = []
+            
+            logger.info("Civil Rights Chatbot initialized")
+            
+        except Exception as e:
+            logger.error(f"Chatbot initialization error: {str(e)}")
+            raise InitializationError(f"Failed to initialize chatbot: {str(e)}")
+    
+    def initialize(self, pdf_paths: Dict[str, str] = None) -> bool:
+        """Initialize the chatbot with document sources."""
+        try:
+            if self.retriever.initialize(pdf_paths):
+                self.is_ready = True
+                stats = self.retriever.get_document_stats()
+                total_chunks = sum(stats.values())
+                logger.info(f"Chatbot ready with {total_chunks} document chunks")
+                return True
+            else:
+                logger.error("Failed to initialize document retriever")
+                return False
+        except Exception as e:
+            logger.error(f"Initialization error: {str(e)}")
+            raise InitializationError(f"Failed to initialize documents: {str(e)}")
+    
+    def _analyze_user_query(self, question: str) -> Dict:
+        """Analyze user query for better retrieval and response generation."""
+        analysis_prompt = f"""
+        Analyze this user question about Kenyan civil rights and constitutional law:
+
+        QUESTION: "{question}"
+
+        Provide analysis in this format:
+        INTENT: [main legal intent]
+        KEY_CONCEPTS: [concept1, concept2, concept3]
+        ENHANCED_QUERY: [optimized search query]
+        DOCUMENT_FOCUS: [constitution/ten_years_assessment/human_rights_essays/all]
+        COMPLEXITY: [1-5]
+        CONTEXT_NEEDED: [brief description]
+        """
         
-        self.cohere_client = cohere.Client(api_key)
-        self.retriever = CivilRightsRetriever(embeddings_dir)
-        self.is_ready = False
+        try:
+            response = self.gemini_model.generate_content(analysis_prompt)
+            return self._parse_query_analysis(response.text)
+        except Exception as e:
+            logger.warning(f"Query analysis error: {str(e)}")
+            return {
+                'intent': 'general_inquiry',
+                'key_concepts': [question],
+                'enhanced_query': question,
+                'document_focus': 'all',
+                'complexity': 3,
+                'context_needed': 'Standard legal context'
+            }
     
-    def initialize(self, pdf_paths: Dict[str, str] = None):
-        """Initialize the chatbot with multiple document sources."""
-        if self.retriever.initialize(pdf_paths):
-            self.is_ready = True
-            print("Civil Rights AI Chatbot is ready!")
-            print("\nDocument Statistics:")
-            stats = self.retriever.get_document_stats()
-            for doc_type, count in stats.items():
-                doc_name = self.retriever.document_types.get(doc_type, doc_type)
-                print(f"  - {doc_name}: {count} chunks")
-            return True
-        else:
-            print("Failed to initialize chatbot")
-            return False
+    def _parse_query_analysis(self, analysis_text: str) -> Dict:
+        """Parse Gemini's analysis response."""
+        lines = analysis_text.strip().split('\n')
+        analysis = {}
+        
+        for line in lines:
+            if ':' in line:
+                key, value = line.split(':', 1)
+                key = key.strip().lower().replace(' ', '_')
+                value = value.strip()
+                
+                if key == 'key_concepts':
+                    value = [concept.strip() for concept in value.replace('[', '').replace(']', '').split(',')]
+                elif key == 'complexity':
+                    try:
+                        value = int(value)
+                    except:
+                        value = 3
+                
+                analysis[key] = value
+        
+        defaults = {
+            'intent': 'general_inquiry',
+            'key_concepts': ['civil rights'],
+            'enhanced_query': '',
+            'document_focus': 'all',
+            'complexity': 3,
+            'context_needed': 'Standard legal context'
+        }
+        
+        for key, default_value in defaults.items():
+            if key not in analysis:
+                analysis[key] = default_value
+        
+        return analysis
     
-    def generate_response(self, question: str, context: str) -> str:
-        """Generate response using Cohere with retrieved context from multiple sources."""
-        prompt = f"""You are an expert legal assistant specializing in Kenyan civil rights and constitutional law. 
-You have access to multiple authoritative sources including the Kenyan Constitution 2010, implementation assessments, and human rights case studies.
+    def _generate_comprehensive_response(self, question: str, document_context: str, analysis: Dict) -> str:
+        """Generate comprehensive response using document context."""
+        
+        complexity_guidance = {
+            1: "Provide a straightforward, basic explanation",
+            2: "Include some legal context and examples", 
+            3: "Provide comprehensive analysis with citations",
+            4: "Include nuanced legal interpretation and precedents",
+            5: "Provide expert-level analysis with multiple perspectives"
+        }
+        
+        prompt = f"""You are an expert legal assistant specializing in Kenyan civil rights and constitutional law.
 
-Your expertise covers:
-- Constitutional rights and freedoms
-- Implementation challenges and successes
-- Real-world human rights experiences
-- Legal precedents and interpretations
-- Civil rights advocacy and protection
+USER QUESTION: {question}
 
-RELEVANT CONTEXT FROM MULTIPLE SOURCES:
-{context}
+QUERY ANALYSIS:
+- Intent: {analysis.get('intent', 'general_inquiry')}
+- Key Concepts: {', '.join(analysis.get('key_concepts', []))}
+- Complexity Level: {analysis.get('complexity', 3)}/5
 
-QUESTION: {question}
+GUIDANCE: {complexity_guidance.get(analysis.get('complexity', 3), 'Provide comprehensive analysis')}
+
+DOCUMENT CONTEXT:
+{document_context}
 
 INSTRUCTIONS:
-1. Provide comprehensive answers drawing from all relevant sources
-2. Cite specific articles, sections, or cases when available
-3. Reference both constitutional provisions AND practical implementation insights
-4. Include real-world examples or case studies when relevant
-5. Explain how constitutional principles apply in practice
-6. If information is incomplete, clearly state what additional context might be needed
-7. Maintain professional legal accuracy while being accessible
-8. Consider both legal theory and practical civil rights challenges
+1. Address the user's question directly and comprehensively
+2. Cite specific constitutional articles, sections, or legal provisions from the provided context
+3. Explain both legal theory and practical implications
+4. Use clear, accessible language while maintaining legal accuracy
+5. Structure your response with clear headings
+6. Include relevant examples when possible from the document context
+7. Base your analysis strictly on the provided document context
 
-Provide a thorough, well-sourced response that demonstrates the depth of Kenya's civil rights framework:"""
+Structure your response as:
+
+## Direct Answer
+[Clear answer to the main question based on document context]
+
+## Legal Framework
+[Relevant constitutional/legal provisions from the documents]
+
+## Practical Implications
+[Real-world applications and implications based on the context]
+
+## Key Points
+[3-4 main takeaways from the analysis]
+
+Provide a thorough, well-sourced response based solely on the document context:"""
 
         try:
             response = self.cohere_client.generate(
                 model='command-r-plus',
                 prompt=prompt,
-                max_tokens=1200,
+                max_tokens=1500,
                 temperature=0.3,
-                stop_sequences=["QUESTION:", "CONTEXT:"]
+                stop_sequences=["USER QUESTION:", "DOCUMENT CONTEXT:"]
             )
             
             return response.generations[0].text.strip()
         
         except Exception as e:
-            return f"Error generating response: {str(e)}"
+            logger.error(f"Response generation error: {str(e)}")
+            raise APIError(f"Failed to generate response: {str(e)}")
     
     def ask(self, question: str, top_k: int = 5, doc_filter: Optional[str] = None) -> str:
         """
-        Ask a question about Kenyan civil rights.
-        doc_filter: Optional filter ('constitution', 'ten_years_assessment', 'human_rights_essays')
+        Ask a question using the document-based system.
+        
+        Args:
+            question: The question to ask
+            top_k: Number of top documents to retrieve
+            doc_filter: Optional filter for document type
+            
+        Returns:
+            String response to the question
+            
+        Raises:
+            ChatbotError: If chatbot is not ready or processing fails
         """
         if not self.is_ready:
-            return "Chatbot not initialized. Please run initialize() first."
+            raise ChatbotError("Chatbot not initialized. Please initialize first.")
         
-        # Retrieve relevant context from multiple sources
-        print("Searching across multiple documents...")
-        context = self.retriever.get_relevant_context(question, top_k=top_k, doc_type_filter=doc_filter)
-        
-        # Generate comprehensive response
-        print("Generating comprehensive response...")
-        response = self.generate_response(question, context)
-        
-        return response
+        try:
+            validation = self.context_validator.validate_context(question)
+            
+            if validation['relevance'] == ContextRelevance.NOT_RELEVANT:
+                return (
+                    "I'm sorry, but your question appears to be outside the scope of civil rights "
+                    "and constitutional law. I'm designed to help with questions about Kenyan "
+                    "constitutional matters, human rights, governance, and related legal topics. "
+                    "Please ask a question related to these areas."
+                )
+            
+            analysis = self._analyze_user_query(question)
+            
+            search_query = analysis.get('enhanced_query', question)
+            if not search_query.strip():
+                search_query = question
+            
+            doc_type_filter = doc_filter
+            if not doc_type_filter:
+                focus = analysis.get('document_focus', 'all')
+                if focus != 'all':
+                    doc_type_filter = focus
+            
+            document_context = self.retriever.get_relevant_context(
+                search_query, 
+                top_k=top_k, 
+                doc_type_filter=doc_type_filter
+            )
+            
+            final_response = self._generate_comprehensive_response(
+                question, document_context, analysis
+            )
+            
+            self.conversation_history.append({
+                'question': question,
+                'analysis': analysis,
+                'response': final_response,
+                'validation': validation
+            })
+            
+            if len(self.conversation_history) > 5:
+                self.conversation_history.pop(0)
+            
+            return final_response
+            
+        except APIError as e:
+            logger.error(f"API error processing question: {str(e)}")
+            raise e
+        except Exception as e:
+            logger.error(f"Error processing question: {str(e)}")
+            raise ChatbotError(f"Failed to process question: {str(e)}")
     
     def ask_constitutional_only(self, question: str, top_k: int = 3) -> str:
         """Ask a question using only the constitution."""
         return self.ask(question, top_k=top_k, doc_filter='constitution')
     
-    def ask_with_implementation_context(self, question: str, top_k: int = 5) -> str:
-        """Ask a question including implementation assessment insights."""
-        return self.ask(question, top_k=top_k, doc_filter=None)
+    def get_conversation_summary(self) -> str:
+        """Get a summary of recent conversation."""
+        if not self.conversation_history:
+            return "No conversation history available."
+        
+        history_text = "\n\n".join([
+            f"Q: {exchange['question']}\nA: {exchange['response'][:200]}..."
+            for exchange in self.conversation_history[-3:]
+        ])
+        
+        summary_prompt = f"""
+        Summarize this conversation about Kenyan civil rights and constitutional law:
+        
+        {history_text}
+        
+        Provide a brief summary highlighting:
+        1. Main topics discussed
+        2. Key legal points covered
+        3. Any recurring themes
+        
+        Keep it concise (2-3 sentences).
+        """
+        
+        try:
+            response = self.gemini_model.generate_content(summary_prompt)
+            return response.text.strip()
+        except Exception as e:
+            logger.error(f"Summary generation error: {str(e)}")
+            raise APIError(f"Failed to generate summary: {str(e)}")
     
-    def chat_loop(self):
-        """Start an interactive chat session."""
-        if not self.is_ready:
-            print("Chatbot not initialized!")
-            return
-        
-        print("=== Kenyan Civil Rights AI Assistant ===")
-        print("Ask questions about civil rights, constitutional law, and human rights in Kenya.")
-        print("Commands:")
-        print("  - 'quit' or 'exit': End session")
-        print("  - 'stats': Show document statistics")
-        print("  - 'const [question]': Search only constitution")
-        print("  - 'help': Show this help\n")
-        
-        while True:
-            try:
-                user_input = input("\nYour question: ").strip()
-                
-                if user_input.lower() in ['quit', 'exit', 'q']:
-                    print("Goodbye!")
-                    break
-                
-                if user_input.lower() == 'help':
-                    print("\nCommands:")
-                    print("  - General questions: Just type your question")
-                    print("  - Constitution only: 'const [your question]'")
-                    print("  - Document stats: 'stats'")
-                    print("  - Exit: 'quit' or 'exit'")
-                    continue
-                
-                if user_input.lower() == 'stats':
-                    stats = self.retriever.get_document_stats()
-                    print("\nDocument Statistics:")
-                    for doc_type, count in stats.items():
-                        doc_name = self.retriever.document_types.get(doc_type, doc_type)
-                        print(f"  - {doc_name}: {count} chunks")
-                    continue
-                
-                if not user_input:
-                    print("Please enter a question.")
-                    continue
-                
-                # Handle constitution-only queries
-                if user_input.lower().startswith('const '):
-                    question = user_input[6:].strip()
-                    if question:
-                        print("\n" + "="*80)
-                        print("SEARCHING CONSTITUTION ONLY...")
-                        response = self.ask_constitutional_only(question)
-                        print("ANSWER:")
-                        print(response)
-                        print("="*80)
-                    else:
-                        print("Please provide a question after 'const'")
-                    continue
-                
-                # Regular comprehensive search
-                print("\n" + "="*80)
-                print("SEARCHING ALL SOURCES...")
-                response = self.ask(user_input)
-                print("COMPREHENSIVE ANSWER:")
-                print(response)
-                print("="*80)
-                
-            except KeyboardInterrupt:
-                print("\nGoodbye!")
-                break
-            except Exception as e:
-                print(f"Error: {str(e)}")
-                continue
+    def get_health_status(self) -> Dict:
+        """Get health status of the chatbot."""
+        return {
+            'is_ready': self.is_ready,
+            'conversation_history_count': len(self.conversation_history),
+            'document_stats': self.retriever.get_document_stats() if self.is_ready else {}
+        }

@@ -1,5 +1,8 @@
 from typing import List, Dict, Optional
 from .embedder import MultiDocumentEmbedder
+import logging
+
+logger = logging.getLogger(__name__)
 
 class CivilRightsRetriever:
     def __init__(self, embeddings_dir: str = "embeddings"):
@@ -11,38 +14,40 @@ class CivilRightsRetriever:
             'human_rights_essays': 'Understanding Human Rights Essays'
         }
     
-    def initialize(self, pdf_paths: Dict[str, str] = None):
-        """
-        Initialize the retriever by loading or creating embeddings.
-        pdf_paths: Dict with doc_type as key and path as value
-        """
-        if self.embedder.load_index():
-            self.is_ready = True
-            return True
-        
-        if pdf_paths:
-            print("No existing embeddings found. Creating new ones...")
-            from .utils import extract_pdf_text
+    def initialize(self, pdf_paths: Dict[str, str] = None) -> bool:
+        """Initialize the retriever by loading or creating embeddings."""
+        try:
+            if self.embedder.load_index():
+                self.is_ready = True
+                logger.info("Loaded existing document embeddings")
+                return True
             
-            documents = {}
-            for doc_type, pdf_path in pdf_paths.items():
-                print(f"Extracting text from {doc_type}...")
-                documents[doc_type] = extract_pdf_text(pdf_path)
+            if pdf_paths:
+                logger.info("Creating new document embeddings...")
+                from .utils import extract_pdf_text
+                
+                documents = {}
+                for doc_type, pdf_path in pdf_paths.items():
+                    documents[doc_type] = extract_pdf_text(pdf_path)
+                
+                self.embedder.create_embeddings(documents)
+                self.is_ready = True
+                logger.info("Successfully created new embeddings")
+                return True
             
-            self.embedder.create_embeddings(documents)
-            self.is_ready = True
-            return True
-        
-        print("No embeddings found and no PDF paths provided.")
-        return False
+            logger.error("No embeddings found and no PDF paths provided")
+            return False
+            
+        except Exception as e:
+            logger.error(f"Retriever initialization error: {str(e)}")
+            return False
     
     def retrieve_context(self, query: str, top_k: int = 5, doc_type_filter: Optional[str] = None) -> List[Dict]:
         """Retrieve relevant context for a given query."""
         if not self.is_ready:
             raise ValueError("Retriever not initialized. Call initialize() first.")
         
-        results = self.embedder.search(query, top_k=top_k, doc_type_filter=doc_type_filter)
-        return results
+        return self.embedder.search(query, top_k=top_k, doc_type_filter=doc_type_filter)
     
     def format_context(self, results: List[Dict]) -> str:
         """Format retrieved results into a context string."""
