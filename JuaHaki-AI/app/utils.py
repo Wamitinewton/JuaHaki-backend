@@ -1,6 +1,7 @@
 import fitz  # PyMuPDF
 import re
-from typing import List, Dict
+from typing import List, Dict, Optional
+from pathlib import Path
 
 def extract_pdf_text(pdf_path: str) -> str:
     """Extract text from PDF file."""
@@ -11,7 +12,7 @@ def extract_pdf_text(pdf_path: str) -> str:
     doc.close()
     return text
 
-def chunk_text(text: str, chunk_size: int = 1000, overlap: int = 200) -> List[Dict]:
+def chunk_text(text: str, chunk_size: int = 1000, overlap: int = 200, doc_type: str = "constitution") -> List[Dict]:
     """
     Split text into overlapping chunks for better retrieval.
     Returns list of dicts with text and metadata.
@@ -40,33 +41,51 @@ def chunk_text(text: str, chunk_size: int = 1000, overlap: int = 200) -> List[Di
                 'id': chunk_id,
                 'text': chunk_text,
                 'start_pos': start,
-                'end_pos': end
+                'end_pos': end,
+                'doc_type': doc_type
             })
             chunk_id += 1
-                # Move start position with overlap
+        
+        # Move start position with overlap
         start = end - overlap
         if start >= len(text):
             break
     
     return chunks
 
-def find_article_section(text: str) -> str:
+def find_document_section(text: str, doc_type: str) -> str:
     """
-    Try to identify which article/section the text belongs to.
-    This is a simple heuristic - can be improved based on your PDF structure.
+    Identify which section the text belongs to based on document type.
     """
-    patterns = [
-        r'ARTICLE\s+(\d+[A-Z]*)',
-        r'Article\s+(\d+[A-Z]*)',
-        r'SECTION\s+(\d+)',
-        r'Section\s+(\d+)',
-        r'CHAPTER\s+(\d+)',
-        r'Chapter\s+(\d+)'
-    ]
+    if doc_type == "constitution":
+        patterns = [
+            r'ARTICLE\s+(\d+[A-Z]*)',
+            r'Article\s+(\d+[A-Z]*)',
+            r'SECTION\s+(\d+)',
+            r'Section\s+(\d+)',
+            r'CHAPTER\s+(\d+)',
+            r'Chapter\s+(\d+)'
+        ]
+    elif doc_type == "ten_years_assessment":
+        patterns = [
+            r'Chapter\s+(\d+)',
+            r'CHAPTER\s+(\d+)',
+            r'Section\s+(\d+\.\d+)',
+            r'(\d+\.\d+\s+[A-Z][a-z\s]+)',
+        ]
+    elif doc_type == "human_rights_essays":
+        patterns = [
+            r'Essay\s+(\d+)',
+            r'Story\s+(\d+)',
+            r'Case\s+Study\s+(\d+)',
+            r'Chapter\s+(\d+)'
+        ]
+    else:
+        patterns = [r'Section\s+(\d+)', r'Chapter\s+(\d+)']
     
     for pattern in patterns:
         match = re.search(pattern, text)
         if match:
             return match.group(0)
     
-    return "Unknown Section"
+    return f"Unknown Section ({doc_type})"

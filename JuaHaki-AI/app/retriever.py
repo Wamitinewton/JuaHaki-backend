@@ -1,35 +1,47 @@
-from typing import List, Dict
-from .embedder import ConstitutionEmbedder
+from typing import List, Dict, Optional
+from .embedder import MultiDocumentEmbedder
 
-class ConstitutionRetriever:
+class CivilRightsRetriever:
     def __init__(self, embeddings_dir: str = "embeddings"):
-        self.embedder = ConstitutionEmbedder(embeddings_dir)
+        self.embedder = MultiDocumentEmbedder(embeddings_dir)
         self.is_ready = False
+        self.document_types = {
+            'constitution': 'Kenyan Constitution 2010',
+            'ten_years_assessment': 'Ten Years Assessment Report',
+            'human_rights_essays': 'Understanding Human Rights Essays'
+        }
     
-    def initialize(self, pdf_path: str = None):
-        """Initialize the retriever by loading or creating embeddings."""
+    def initialize(self, pdf_paths: Dict[str, str] = None):
+        """
+        Initialize the retriever by loading or creating embeddings.
+        pdf_paths: Dict with doc_type as key and path as value
+        """
         if self.embedder.load_index():
             self.is_ready = True
             return True
         
-        if pdf_path:
+        if pdf_paths:
             print("No existing embeddings found. Creating new ones...")
             from .utils import extract_pdf_text
             
-            text = extract_pdf_text(pdf_path)
-            self.embedder.create_embeddings(text)
+            documents = {}
+            for doc_type, pdf_path in pdf_paths.items():
+                print(f"Extracting text from {doc_type}...")
+                documents[doc_type] = extract_pdf_text(pdf_path)
+            
+            self.embedder.create_embeddings(documents)
             self.is_ready = True
             return True
         
-        print("No embeddings found and no PDF path provided.")
+        print("No embeddings found and no PDF paths provided.")
         return False
     
-    def retrieve_context(self, query: str, top_k: int = 3) -> List[Dict]:
+    def retrieve_context(self, query: str, top_k: int = 5, doc_type_filter: Optional[str] = None) -> List[Dict]:
         """Retrieve relevant context for a given query."""
         if not self.is_ready:
             raise ValueError("Retriever not initialized. Call initialize() first.")
         
-        results = self.embedder.search(query, top_k=top_k)
+        results = self.embedder.search(query, top_k=top_k, doc_type_filter=doc_type_filter)
         return results
     
     def format_context(self, results: List[Dict]) -> str:
@@ -39,17 +51,36 @@ class ConstitutionRetriever:
         
         context_parts = []
         for i, result in enumerate(results, 1):
+            doc_name = self.document_types.get(result['doc_type'], result['doc_type'])
             section = result.get('section', 'Unknown Section')
             text = result['text']
             score = result.get('relevance_score', 0)
             
             context_parts.append(
-                f"--- Context {i} (Section: {section}, Relevance: {score:.3f}) ---\n{text}\n"
+                f"--- Context {i} ---\n"
+                f"Source: {doc_name}\n"
+                f"Section: {section}\n"
+                f"Relevance: {score:.3f}\n"
+                f"Content: {text}\n"
             )
         
         return "\n".join(context_parts)
     
-    def get_relevant_context(self, query: str, top_k: int = 3) -> str:
+    def get_relevant_context(self, query: str, top_k: int = 5, doc_type_filter: Optional[str] = None) -> str:
         """Get formatted relevant context for a query."""
-        results = self.retrieve_context(query, top_k)
+        results = self.retrieve_context(query, top_k, doc_type_filter)
         return self.format_context(results)
+    
+    def get_document_stats(self) -> Dict:
+        """Get statistics about loaded documents."""
+        if not self.is_ready:
+            return {}
+        
+        stats = {}
+        for metadata in self.embedder.metadata:
+            doc_type = metadata['doc_type']
+            if doc_type not in stats:
+                stats[doc_type] = 0
+            stats[doc_type] += 1
+        
+        return stats

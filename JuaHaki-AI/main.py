@@ -1,15 +1,30 @@
 import os
 import sys
-from app.chatbot import ConstitutionChatbot
+from pathlib import Path
+from app.chatbot import CivilRightsChatbot
 
-PDF_PATH = "data/Constitution.pdf"
+# Document paths
+PDF_PATHS = {
+    'constitution': "data/Constitution.pdf",
+    'ten_years_assessment': "data/Ten_Years_Assessment.pdf",
+    'human_rights_essays': "data/Understanding_Human_Rights.pdf"
+}
+
 EMBEDDINGS_DIR = "embeddings"
 
 def check_requirements():
     """Check if required files exist."""
-    if not os.path.exists(PDF_PATH):
-        print(f"Error: PDF file not found at '{PDF_PATH}'")
-        print("Please place your Kenyan Constitution PDF in the data/ folder")
+    missing_files = []
+    
+    for doc_type, pdf_path in PDF_PATHS.items():
+        if not os.path.exists(pdf_path):
+            missing_files.append(f"  - {pdf_path} ({doc_type})")
+    
+    if missing_files:
+        print("Error: Missing PDF files:")
+        for file in missing_files:
+            print(file)
+        print("\nPlease place all required PDFs in the data/ folder")
         return False
     
     if not os.path.exists('.env'):
@@ -20,17 +35,22 @@ def check_requirements():
     return True
 
 def main():
-    print("🏛️  Kenyan Constitution RAG Chatbot (Cohere)")
+    print("🏛️  Kenyan Civil Rights AI Chatbot")
+    print("=" * 50)
+    print("Powered by multiple authoritative sources:")
+    print("  📖 Kenyan Constitution 2010")
+    print("  📊 Ten Years Implementation Assessment")
+    print("  📝 Human Rights Essays & Case Studies")
     print("=" * 50)
     
     if not check_requirements():
         sys.exit(1)
     
     try:
-        print("Initializing chatbot...")
-        chatbot = ConstitutionChatbot(EMBEDDINGS_DIR)
+        print("Initializing comprehensive civil rights chatbot...")
+        chatbot = CivilRightsChatbot(EMBEDDINGS_DIR)
         
-        if not chatbot.initialize(PDF_PATH):
+        if not chatbot.initialize(PDF_PATHS):
             print("Failed to initialize chatbot")
             sys.exit(1)
         
