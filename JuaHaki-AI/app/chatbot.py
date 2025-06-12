@@ -127,11 +127,11 @@ class CivilRightsChatbot:
         """Generate comprehensive response using document context."""
         
         complexity_guidance = {
-            1: "Provide a straightforward, basic explanation",
-            2: "Include some legal context and examples", 
-            3: "Provide comprehensive analysis with citations",
-            4: "Include nuanced legal interpretation and precedents",
-            5: "Provide expert-level analysis with multiple perspectives"
+            1: "Provide a straightforward, basic explanation in simple terms",
+            2: "Include some legal context and examples in accessible language", 
+            3: "Provide comprehensive analysis with clear explanations and citations",
+            4: "Include nuanced legal interpretation with detailed context",
+            5: "Provide expert-level analysis with comprehensive legal reasoning"
         }
         
         prompt = f"""You are an expert legal assistant specializing in Kenyan civil rights and constitutional law.
@@ -149,29 +149,16 @@ DOCUMENT CONTEXT:
 {document_context}
 
 INSTRUCTIONS:
-1. Address the user's question directly and comprehensively
-2. Cite specific constitutional articles, sections, or legal provisions from the provided context
-3. Explain both legal theory and practical implications
-4. Use clear, accessible language while maintaining legal accuracy
-5. Structure your response with clear headings
-6. Include relevant examples when possible from the document context
+1. Provide a comprehensive, flowing response that directly addresses the user's question
+2. Write in clear, natural prose without section headers or structural formatting
+3. Integrate citations to specific constitutional articles, sections, or legal provisions naturally within the text
+4. Explain both legal theory and practical implications in a coherent narrative
+5. Use accessible language while maintaining legal accuracy
+6. Include relevant examples when possible, drawn from the document context
 7. Base your analysis strictly on the provided document context
+8. Write as a continuous, well-structured response without artificial divisions or headings
 
-Structure your response as:
-
-## Direct Answer
-[Clear answer to the main question based on document context]
-
-## Legal Framework
-[Relevant constitutional/legal provisions from the documents]
-
-## Practical Implications
-[Real-world applications and implications based on the context]
-
-## Key Points
-[3-4 main takeaways from the analysis]
-
-Provide a thorough, well-sourced response based solely on the document context:"""
+Provide a thorough, well-sourced response in natural flowing text based solely on the document context:"""
 
         try:
             response = self.cohere_client.generate(
