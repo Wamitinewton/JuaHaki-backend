@@ -1,3 +1,68 @@
 spring:
   application:
     name: juahaki
+  config:
+    import: "file:keys.properties"
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        default_schema: public
+  datasource:
+    url: ${database.url}
+    username: ${database.username}
+    password: ${database.password}
+    driver-class-name: org.postgresql.Driver
+
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    cache: false
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${mail.username}
+    password: ${mail.password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            trust: smtp.gmail.com
+
+#  security:
+#    oauth2:
+#      client:
+#        registration:
+#          google:
+#            client-id: ${google.client.id}
+#            client-secret: ${google.client.secret}
+#            scope: openid,profile,email
+#            redirect-uri: ${google.redirect.uri}
+#            authorization-grant-type: authorization_code
+#        provider:
+#          google:
+#            authorization-uri: https://accounts.google.com/o/oauth2/auth
+#            token-uri: https://oauth2.googleapis.com/token
+#            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+#            user-name-attribute: sub
+
+server:
+  port: 8075
+  servlet:
+    context-path: /
+
+app:
+  jwtSecret: ${jwt.secret}
+  jwtExpirationMs: ${jwt.expiration.ms}
+  jwtRefreshExpirationMs: ${jwt.refresh.expiration.ms}
+  oauth2:
+    authorizedRedirectUri: ${oauth2.authorized.redirect.uri}
+api:
+  prefix: api/v1
