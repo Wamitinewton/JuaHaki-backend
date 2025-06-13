@@ -33,4 +33,5 @@ build/
 .vscode/
 JuaHaki-AI/.env.example
 JuaHaki-AI/.env
-JuaHaki-AI/embeddings
+JuaHaki-AI/embeddings/
+keys.propeties
