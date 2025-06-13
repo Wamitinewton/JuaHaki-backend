@@ -2,9 +2,7 @@ package com.juahaki.juahaki.model.user;
 
 import com.juahaki.juahaki.enums.AuthProvider;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,8 +13,10 @@ import java.util.List;
 @Entity
 @Table(name = "users")
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class User implements UserDetails {
 
     @Id
@@ -51,6 +51,7 @@ public class User implements UserDetails {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @Builder.Default
     @Column(name = "email_verified")
     private Boolean emailVerified = false;
 
@@ -64,6 +65,7 @@ public class User implements UserDetails {
 
     private boolean isCredentialsNonExpired = true;
 
+    @Builder.Default
     private boolean isEnabled = false;
 
     @PrePersist
