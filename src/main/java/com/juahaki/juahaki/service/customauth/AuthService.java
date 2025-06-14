@@ -58,9 +58,12 @@ public class AuthService implements IAuthService {
 
     @Override
     public JwtResponse login(LoginRequest loginRequest) {
+        log.info("Started the auth {} ", loginRequest);
         validateLoginRequest(loginRequest);
+        log.info("Validated request {}", loginRequest);
 
         return Optional.of(loginRequest)
+
                 .map(this::authenticateUser)
                 .map(auth -> (User) auth.getPrincipal())
                 .map(this::validateUserAccount)
@@ -180,6 +183,8 @@ public class AuthService implements IAuthService {
     @Override
     public Authentication authenticateUser(LoginRequest request) {
         try {
+            log.info("Validated request {}", request);
+
             return authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             request.getUsernameOrEmail(),

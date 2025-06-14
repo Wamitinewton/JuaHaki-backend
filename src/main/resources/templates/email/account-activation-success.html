@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Activated</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .content {
+            padding: 40px 20px;
+            text-align: center;
+        }
+        .success-icon {
+            font-size: 72px;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+        .greeting {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        .message {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.8;
+        }
+        .success-box {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border: 2px solid #28a745;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+        .success-title {
+            font-size: 18px;
+            color: #155724;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        .success-text {
+            font-size: 14px;
+            color: #155724;
+            margin: 0;
+        }
+        .next-steps {
+            background-color: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 30px 0;
+            text-align: left;
+        }
+        .steps-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: white;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+        }
+        .step-number {
+            background-color: #28a745;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        .step-content {
+            flex: 1;
+        }
+        .step-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .step-desc {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.4;
+        }
+        .cta-section {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 30px 0;
+        }
+        .cta-text {
+            font-size: 16px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        .cta-subtext {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #e9ecef;
+        }
+        .footer-text {
+            font-size: 12px;
+            color: #6c757d;
+            margin: 0;
+        }
+        .support-link {
+            color: #28a745;
+            text-decoration: none;
+        }
+        @media only screen and (max-width: 480px) {
+            .container {
+                margin: 0;
+                box-shadow: none;
+            }
+            .header {
+                padding: 30px 15px;
+            }
+            .header h1 {
+                font-size: 24px;
+            }
+            .content {
+                padding: 30px 15px;
+            }
+            .success-icon {
+                font-size: 56px;
+            }
+            .greeting {
+                font-size: 20px;
+            }
+            .step-item {
+                flex-direction: column;
+                text-align: center;
+            }
+            .step-number {
+                margin: 0 auto 10px auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎊 Account Activated!</h1>
+        </div>
+        
+        <div class="content">
+            <div class="success-icon">✅</div>
+            
+            <div class="greeting">
+                Congratulations, <span th:text="${firstName}">User</span>!
+            </div>
+            
+            <div class="message">
+                Your JuaHaki account is now fully activated and ready to use. You're all set to begin your civic education journey.
+            </div>
+            
+            <div class="success-box">
+                <div class="success-title">🚀 You're Ready to Go!</div>
+                <p class="success-text">
+                    Your account verification is complete. You now have full access to all JuaHaki features and can start exploring Kenya's civic landscape.
+                </p>
+            </div>
+            
+            <div class="next-steps">
+                <div class="steps-title">🗺️ Your Next Steps</div>
+                
+                <div class="step-item">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <div class="step-title">Open Your App</div>
+                        <div class="step-desc">Launch JuaHaki on your Android device</div>
+                    </div>
+                </div>
+                
+                <div class="step-item">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <div class="step-title">Explore the Constitution</div>
+                        <div class="step-desc">Start with understanding your fundamental rights</div>
+                    </div>
+                </div>
+                
+                <div class="step-item">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <div class="step-title">Chat with AI</div>
+                        <div class="step-desc">Ask questions about governance and civic matters</div>
+                    </div>
+                </div>
+                
+                <div class="step-item">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <div class="step-title">Stay Informed</div>
+                        <div class="step-desc">Follow finance bills and policy updates</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="cta-section">
+                <div class="cta-text">🇰🇪 Ready to become a more informed citizen?</div>
+                <div class="cta-subtext">Your civic education journey starts now!</div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p class="footer-text">
+                Need assistance? Contact us at 
+                <a href="#" th:href="'mailto:' + ${supportEmail}" class="support-link" th:text="${supportEmail}">support@juahaki.com</a>
+            </p>
+            <p class="footer-text">
+                © <span th:text="${currentYear}">2024</span> <span th:text="${companyName}">JuaHaki Civic Educator</span>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
