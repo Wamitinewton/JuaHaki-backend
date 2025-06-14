@@ -58,7 +58,7 @@ public class OtpService implements IOtpService {
             throw new IllegalArgumentException("Email is required");
         }
 
-        User user = userRepository.findByEMail(email.toLowerCase().trim())
+        User user = userRepository.findByEmail(email.toLowerCase().trim())
                 .orElseThrow(() -> new CustomException("User not found with email: " + email));
 
         otpRepository.invalidateUserOtpsByType(user, OtpType.PASSWORD_RESET);
@@ -94,7 +94,7 @@ public class OtpService implements IOtpService {
             throw new CustomException("Invalid or expired OTP");
         }
 
-        User user = userRepository.findByEMail(email.toLowerCase().trim())
+        User user = userRepository.findByEmail(email.toLowerCase().trim())
                 .orElseThrow(() -> new CustomException("User not found"));
 
         if (user.getEmailVerified()) {
@@ -119,7 +119,7 @@ public class OtpService implements IOtpService {
             throw new IllegalArgumentException("Email is required");
         }
 
-        User user = userRepository.findByEMail(email.toLowerCase().trim())
+        User user = userRepository.findByEmail(email.toLowerCase().trim())
                 .orElseThrow(() -> new CustomException("User not found"));
 
         if (user.getEmailVerified()) {

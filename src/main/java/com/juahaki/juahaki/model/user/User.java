@@ -43,6 +43,7 @@ public class User implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private AuthProvider provider = AuthProvider.LOCAL;
 
     @Column(name = "provider_id")
@@ -59,10 +60,13 @@ public class User implements UserDetails {
 
     private LocalDateTime updatedAt;
 
+    @Builder.Default
     private boolean isAccountNonExpired = true;
 
+    @Builder.Default
     private boolean isAccountNonLocked = true;
 
+    @Builder.Default
     private boolean isCredentialsNonExpired = true;
 
     @Builder.Default
@@ -122,4 +126,3 @@ public class User implements UserDetails {
         return provider == AuthProvider.LOCAL;
     }
 }
-

@@ -21,6 +21,7 @@ spring:
     mode: HTML
     encoding: UTF-8
     cache: false
+
   mail:
     host: smtp.gmail.com
     port: 587
@@ -36,22 +37,24 @@ spring:
           ssl:
             trust: smtp.gmail.com
 
-#  security:
-#    oauth2:
-#      client:
-#        registration:
-#          google:
-#            client-id: ${google.client.id}
-#            client-secret: ${google.client.secret}
-#            scope: openid,profile,email
-#            redirect-uri: ${google.redirect.uri}
-#            authorization-grant-type: authorization_code
-#        provider:
-#          google:
-#            authorization-uri: https://accounts.google.com/o/oauth2/auth
-#            token-uri: https://oauth2.googleapis.com/token
-#            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
-#            user-name-attribute: sub
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${google.client.id}
+            client-secret: ${google.client.secret}
+            scope: openid,profile,email
+            redirect-uri: ${google.redirect.uri}
+            authorization-grant-type: authorization_code
+            # Enable PKCE for mobile security
+            client-authentication-method: none
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+            user-name-attribute: sub
 
 server:
   port: 8075
@@ -64,5 +67,7 @@ app:
   jwtRefreshExpirationMs: ${jwt.refresh.expiration.ms}
   oauth2:
     authorizedRedirectUri: ${oauth2.authorized.redirect.uri}
+    webRedirectUri: ${oauth2.web.redirect.uri}
+
 api:
   prefix: api/v1
