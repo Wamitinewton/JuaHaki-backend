@@ -6,16 +6,14 @@ import com.juahaki.juahaki.dto.auth.RefreshTokenRequest;
 import com.juahaki.juahaki.dto.auth.SignUpRequest;
 import com.juahaki.juahaki.dto.otp.VerifyOtpRequest;
 import com.juahaki.juahaki.dto.user.UserInfo;
-import com.juahaki.juahaki.exception.CustomException;
 import com.juahaki.juahaki.response.ApiResponse;
 import com.juahaki.juahaki.service.customauth.IAuthService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import static org.springframework.http.HttpStatus.*;
 
+@Slf4j
 @RestController
 @RequestMapping("${api.prefix}/auth")
 @RequiredArgsConstructor
@@ -25,62 +23,51 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse> signUp(@RequestBody SignUpRequest signUpRequest) {
-        try {
-            UserInfo userInfo = authService.signUp(signUpRequest);
-            return ResponseEntity.ok(new ApiResponse("Successfully signed up", userInfo));
-        } catch (CustomException e) {
-            return ResponseEntity.status(CONFLICT)
-                    .body(new ApiResponse(e.getMessage(), null));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse("An unexpected error occurred. Please try again.", null));
-        }
+        log.info("Processing signup request for email: {}", signUpRequest.getEmail());
+
+        UserInfo userInfo = authService.signUp(signUpRequest);
+
+        log.info("Successfully processed signup for user: {}", userInfo.getUsername());
+        return ResponseEntity.ok(new ApiResponse("Successfully signed up. Please check your email for verification", userInfo));
     }
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse> login(@RequestBody LoginRequest loginRequest) {
-        try {
-            JwtResponse jwtResponse = authService.login(loginRequest);
-            return ResponseEntity.ok(new ApiResponse("Successfully logged in", jwtResponse));
-        } catch (CustomException e) {
-            return ResponseEntity.status(UNAUTHORIZED)
-                    .body(new ApiResponse(e.getMessage(), null));
-        }
+        log.info("Processing login request for: {}", loginRequest.getUsernameOrEmail());
+
+        JwtResponse jwtResponse = authService.login(loginRequest);
+
+        log.info("Successfully processed login for user: {}", jwtResponse.getUser().getUsername());
+        return ResponseEntity.ok(new ApiResponse("Successfully logged in", jwtResponse));
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse> refreshToken(@RequestBody RefreshTokenRequest refreshTokenRequest) {
-        try {
-            JwtResponse jwtResponse = authService.refreshToken(refreshTokenRequest);
-            return ResponseEntity.ok(new ApiResponse("Successfully refreshed token", jwtResponse));
-        } catch (CustomException e) {
-            return ResponseEntity.status(UNAUTHORIZED)
-                    .body(new ApiResponse(e.getMessage(), null));
-        }
+        log.info("Processing token refresh request");
 
+        JwtResponse jwtResponse = authService.refreshToken(refreshTokenRequest);
+
+        log.info("Successfully refreshed token for user: {}", jwtResponse.getUser().getUsername());
+        return ResponseEntity.ok(new ApiResponse("Successfully refreshed token", jwtResponse));
     }
 
     @PostMapping("/verify-email")
-    public ResponseEntity<ApiResponse> verifyEmail(@Valid @RequestBody VerifyOtpRequest verifyOtpRequest) {
-        try {
-            authService.verifyEmailOtp(verifyOtpRequest);
-            return ResponseEntity.ok(new ApiResponse("Email verified successfully! Your account is now active", null));
-        } catch (Exception e) {
-            return ResponseEntity.status(BAD_REQUEST)
-                    .body(new ApiResponse(e.getMessage(), null));
-        }
+    public ResponseEntity<ApiResponse> verifyEmail(@RequestBody VerifyOtpRequest verifyOtpRequest) {
+        log.info("Processing email verification for: {}", verifyOtpRequest.getEmail());
+
+        authService.verifyEmailOtp(verifyOtpRequest);
+
+        log.info("Successfully verified email for: {}", verifyOtpRequest.getEmail());
+        return ResponseEntity.ok(new ApiResponse("Email verified successfully! Your account is now active", null));
     }
 
     @PostMapping("/resend-verification")
     public ResponseEntity<ApiResponse> resendEmailVerification(@RequestParam String email) {
-        try {
-            authService.resendEmailVerificationOtp(email);
-            return ResponseEntity
-                    .ok(new ApiResponse("Verification email sent successfully! Please check your inbox.", null));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse(e.getMessage(), null));
-        }
-    }
+        log.info("Processing resend verification request for: {}", email);
 
+        authService.resendEmailVerificationOtp(email);
+
+        log.info("Successfully sent verification email to: {}", email);
+        return ResponseEntity.ok(new ApiResponse("Verification email sent successfully! Please check your inbox.", null));
+    }
 }

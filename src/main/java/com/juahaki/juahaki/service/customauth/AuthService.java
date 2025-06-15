@@ -18,13 +18,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import java.util.Optional;
-
 
 @Slf4j
 @Service
@@ -42,33 +42,59 @@ public class AuthService implements IAuthService {
     @Override
     public UserInfo signUp(SignUpRequest signUpRequest) {
         validateSignUpRequest(signUpRequest);
-        return Optional.of(signUpRequest)
-                .filter(request -> !userRepository.existsByUsername(request.getUsername()))
-                .filter(request -> !userRepository.existsByEmail(request.getEmail()))
-                .map(this::createUser)
-                .map(userRepository::save)
-                .map(user -> {
-                    sendWelcomeEmail(user);
-                    sendVerificationOtp(user);
-                    return user;
-                })
-                .map(userMapper::mapToUserInfo)
-                .orElseThrow(() -> handleSignUpException(signUpRequest));
+        
+        if (userRepository.existsByUsername(signUpRequest.getUsername())) {
+            throw new AlreadyExistsException("Username already exists");
+        }
+        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+            throw new AlreadyExistsException("Email already exists");
+        }
+
+        try {
+            User user = createUser(signUpRequest);
+            User savedUser = userRepository.save(user);
+            
+            sendWelcomeEmail(savedUser);
+            sendVerificationOtp(savedUser);
+            
+            return userMapper.mapToUserInfo(savedUser);
+        } catch (DataIntegrityViolationException e) {
+            log.error("Data integrity violation during user registration", e);
+            throw new AlreadyExistsException("Username or email already exists");
+        } catch (Exception e) {
+            log.error("Unexpected error during user registration", e);
+            throw new CustomException("Registration failed. Please try again");
+        }
     }
 
     @Override
     public JwtResponse login(LoginRequest loginRequest) {
-        log.info("Started the auth {} ", loginRequest);
         validateLoginRequest(loginRequest);
-        log.info("Validated request {}", loginRequest);
-
-        return Optional.of(loginRequest)
-
-                .map(this::authenticateUser)
-                .map(auth -> (User) auth.getPrincipal())
-                .map(this::validateUserAccount)
-                .map(this::createJwtResponse)
-                .orElseThrow(() -> new CustomException("Authentication failed"));
+        
+        try {
+            User user = findUserByUsernameOrEmail(loginRequest.getUsernameOrEmail());
+            
+            validateUserAccountStatus(user);
+            
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getUsernameOrEmail(),
+                            loginRequest.getPassword()
+                    )
+            );
+            
+            User authenticatedUser = (User) authentication.getPrincipal();
+            return createJwtResponse(authenticatedUser);
+            
+        } catch (AuthenticationException e) {
+            log.warn("Authentication failed for user: {}", loginRequest.getUsernameOrEmail());
+            throw new BadCredentialsException("Invalid username/email or password");
+        } catch (CustomException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error during login", e);
+            throw new CustomException("Login failed. Please try again");
+        }
     }
 
     @Override
@@ -90,6 +116,7 @@ public class AuthService implements IAuthService {
                     .user(userMapper.mapToUserInfo(user))
                     .build();
         } catch (Exception e) {
+            log.warn("Failed to refresh token", e);
             throw new CustomException("Invalid or expired refresh token");
         }
     }
@@ -101,7 +128,8 @@ public class AuthService implements IAuthService {
         try {
             otpService.activateUserAccount(verifyOtpRequest.getEmail(), verifyOtpRequest.getOtp());
         } catch (Exception e) {
-            throw new CustomException("Email verification failed: " + e.getMessage());
+            log.warn("Email verification failed for: {}", verifyOtpRequest.getEmail(), e);
+            throw new CustomException("Email verification failed. Please check your OTP and try again");
         }
     }
 
@@ -114,94 +142,89 @@ public class AuthService implements IAuthService {
         try {
             otpService.resendEmailVerificationOtp(email);
         } catch (Exception e) {
-            throw new CustomException("Failed to resend verification email: " + e.getMessage());
+            log.warn("Failed to resend verification email to: {}", email, e);
+            throw new CustomException("Failed to resend verification email. Please try again");
         }
     }
 
     @Override
     public void validateSignUpRequest(SignUpRequest request) {
-        Optional.ofNullable(request)
-                .filter(r -> StringUtils.hasText(r.getUsername()))
-                .filter(r -> StringUtils.hasText(r.getEmail()))
-                .filter(r -> StringUtils.hasText(r.getPassword()))
-                .filter(r -> StringUtils.hasText(r.getFirstName()))
-                .filter(r -> StringUtils.hasText(r.getLastName()))
-                .orElseThrow(() -> new IllegalArgumentException("All fields are required"));
+        if (request == null) {
+            throw new IllegalArgumentException("Registration data is required");
+        }
+        
+        if (!StringUtils.hasText(request.getUsername())) {
+            throw new IllegalArgumentException("Username is required");
+        }
+        if (!StringUtils.hasText(request.getEmail())) {
+            throw new IllegalArgumentException("Email is required");
+        }
+        if (!StringUtils.hasText(request.getPassword())) {
+            throw new IllegalArgumentException("Password is required");
+        }
+        if (!StringUtils.hasText(request.getFirstName())) {
+            throw new IllegalArgumentException("First name is required");
+        }
+        if (!StringUtils.hasText(request.getLastName())) {
+            throw new IllegalArgumentException("Last name is required");
+        }
     }
 
     @Override
     public void validateLoginRequest(LoginRequest request) {
-        Optional.ofNullable(request)
-                .filter(r -> StringUtils.hasText(r.getUsernameOrEmail()))
-                .filter(r -> StringUtils.hasText(r.getPassword()))
-                .orElseThrow(() -> new IllegalArgumentException("Username/email and email are required"));
+        if (request == null) {
+            throw new IllegalArgumentException("Login data is required");
+        }
+        
+        if (!StringUtils.hasText(request.getUsernameOrEmail())) {
+            throw new IllegalArgumentException("Username or email is required");
+        }
+        if (!StringUtils.hasText(request.getPassword())) {
+            throw new IllegalArgumentException("Password is required");
+        }
     }
 
     @Override
     public void validateRefreshTokenRequest(RefreshTokenRequest request) {
-        Optional.ofNullable(request)
-                .filter(r -> StringUtils.hasText(r.getRefreshToken()))
-                .orElseThrow(() -> new IllegalArgumentException("Refresh token is required"));
+        if (request == null || !StringUtils.hasText(request.getRefreshToken())) {
+            throw new IllegalArgumentException("Refresh token is required");
+        }
     }
 
     @Override
     public void validateVerifyOtpRequest(VerifyOtpRequest request) {
-        Optional.ofNullable(request)
-                .filter(r -> StringUtils.hasText(r.getEmail()))
-                .filter(r -> StringUtils.hasText(r.getOtp()))
-                .orElseThrow(() -> new IllegalArgumentException("Email and Otp are required"));
+        if (request == null) {
+            throw new IllegalArgumentException("OTP verification data is required");
+        }
+        
+        if (!StringUtils.hasText(request.getEmail())) {
+            throw new IllegalArgumentException("Email is required");
+        }
+        if (!StringUtils.hasText(request.getOtp())) {
+            throw new IllegalArgumentException("OTP is required");
+        }
     }
 
     @Override
     public User createUser(SignUpRequest request) {
-        try {
-            return User.builder()
-                    .firstName(request.getFirstName().trim())
-                    .lastName(request.getLastName().trim())
-                    .username(request.getUsername().trim().toLowerCase())
-                    .email(request.getEmail().trim().toLowerCase())
-                    .password(passwordEncoder.encode(request.getPassword()))
-                    .isEnabled(false)
-                    .emailVerified(false)
-                    .build();
-        } catch (DataIntegrityViolationException e) {
-            throw new AlreadyExistsException("Username or Email already exists");
-        }
+        return User.builder()
+                .firstName(request.getFirstName().trim())
+                .lastName(request.getLastName().trim())
+                .username(request.getUsername().trim().toLowerCase())
+                .email(request.getEmail().trim().toLowerCase())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .phoneNumber(request.getPhoneNumber())
+                .isEnabled(false)
+                .emailVerified(false)
+                .build();
     }
 
-    @Override
-    public RuntimeException handleSignUpException(SignUpRequest request) {
-        if (userRepository.existsByUsername(request.getUsername())) {
-            return new CustomException("Username already exists");
-        }
-        if (userRepository.existsByEmail(request.getEmail())) {
-            return new CustomException("Email already exists");
-        }
-        return new CustomException("Registration failed");
-    }
 
-    @Override
-    public Authentication authenticateUser(LoginRequest request) {
-        try {
-            log.info("Validated request {}", request);
-
-            return authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getUsernameOrEmail(),
-                            request.getPassword()
-                    )
-            );
-        } catch (Exception e) {
-            throw new CustomException("Invalid username/email or password");
-        }
-    }
 
     @Override
     public JwtResponse createJwtResponse(User user) {
         try {
             String[] tokens = jwtHelperService.generateTokenPair(user);
-
-            UserInfo userInfo = userMapper.mapToUserInfo(user);
 
             return JwtResponse.builder()
                     .accessToken(tokens[0])
@@ -209,27 +232,31 @@ public class AuthService implements IAuthService {
                     .user(userMapper.mapToUserInfo(user))
                     .build();
         } catch (Exception e) {
+            log.error("Failed to generate JWT tokens for user: {}", user.getUsername(), e);
             throw new CustomException("Failed to generate authentication tokens");
         }
     }
 
-    private User validateUserAccount(User user) {
+    private User findUserByUsernameOrEmail(String usernameOrEmail) {
+        return userRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
+                .orElseThrow(() -> new BadCredentialsException("Invalid username/email or password"));
+    }
+
+    private void validateUserAccountStatus(User user) {
         if (!user.isEnabled()) {
-            throw new CustomException("Account is disabled. Please verify your email first");
+            throw new CustomException("Account is disabled. Please verify your email to activate your account");
         }
 
         if (!user.getEmailVerified()) {
-            throw new CustomException("Email not verified. Please check your email for verification");
+            throw new CustomException("Email not verified. Please check your email for the verification code");
         }
-
-        return user;
     }
 
     private void sendWelcomeEmail(User user) {
         try {
             emailService.sendWelcomeEmail(user.getEmail(), user.getFirstName());
         } catch (Exception e) {
-            log.warn("Failed to send welcome email to user: {}", user.getEmail());
+            log.warn("Failed to send welcome email to user: {}", user.getEmail(), e);
         }
     }
 
@@ -237,7 +264,7 @@ public class AuthService implements IAuthService {
         try {
             otpService.generateAndSendEmailVerificationOtp(user);
         } catch (Exception e) {
-            log.error("Failed to send email verification OTP to user");
+            log.error("Failed to send email verification OTP to user: {}", user.getEmail(), e);
         }
     }
 }

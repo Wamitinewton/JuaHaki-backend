@@ -7,7 +7,6 @@ import com.juahaki.juahaki.dto.auth.SignUpRequest;
 import com.juahaki.juahaki.dto.otp.VerifyOtpRequest;
 import com.juahaki.juahaki.dto.user.UserInfo;
 import com.juahaki.juahaki.model.user.User;
-import org.springframework.security.core.Authentication;
 
 public interface IAuthService {
 
@@ -31,9 +30,6 @@ public interface IAuthService {
 
     User createUser(SignUpRequest request);
 
-    RuntimeException handleSignUpException(SignUpRequest request);
-
-    Authentication authenticateUser(LoginRequest request);
 
     JwtResponse createJwtResponse(User user);
 }
