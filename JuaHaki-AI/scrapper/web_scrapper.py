@@ -90,7 +90,7 @@ class WebContentLoader:
         """
         
         
-        self.logger.info("🔄 Loading content with custom requests method")
+        self.logger.info("Loading content with custom requests method")
         
         # Create session with retry strategy
         session = requests.Session()
@@ -135,12 +135,12 @@ class WebContentLoader:
                 if len(text_content) > 100:  # Ensure meaningful content
                     doc = self._create_document(url, text_content, "custom_requests")
                     documents.append(doc)
-                    self.logger.info(f"✅ Successfully loaded: {url} ({len(text_content)} chars)")
+                    self.logger.info(f"Successfully loaded: {url} ({len(text_content)} chars)")
                 else:
-                    self.logger.warning(f"⚠️ Insufficient content from: {url}")
+                    self.logger.warning(f"Insufficient content from: {url}")
                 
             except Exception as e:
-                self.logger.error(f"❌ Failed to load {url}: {e}")
+                self.logger.error(f"Failed to load {url}: {e}")
         
         return documents
     
@@ -151,13 +151,13 @@ class WebContentLoader:
         Returns:
             List of LangChain Document objects
         """
-        self.logger.info("🔄 Loading content with BeautifulSoup method")
+        self.logger.info("Loading content with BeautifulSoup method")
         
         documents = []
         
         for url in self.urls:
             try:
-                self.logger.info(f"🔄 Scraping: {url}")
+                self.logger.info(f"Scraping: {url}")
                 
                 response = requests.get(
                     url,
@@ -187,12 +187,12 @@ class WebContentLoader:
                 if len(text_content) > 100 and not self._is_content_blocked(text_content):
                     doc = self._create_document(url, text_content, "beautifulsoup")
                     documents.append(doc)
-                    self.logger.info(f"✅ Successfully scraped: {url} ({len(text_content)} chars)")
+                    self.logger.info(f"Successfully scraped: {url} ({len(text_content)} chars)")
                 else:
-                    self.logger.warning(f"⚠️ Insufficient or blocked content from: {url}")
+                    self.logger.warning(f"Insufficient or blocked content from: {url}")
                 
             except Exception as e:
-                self.logger.error(f"❌ Failed to scrape {url}: {e}")
+                self.logger.error(f"Failed to scrape {url}: {e}")
         
         return documents
     
@@ -207,7 +207,7 @@ class WebContentLoader:
         Returns:
             List of LangChain Document objects
         """
-        self.logger.info("🔄 Loading content with Selenium method")
+        self.logger.info("Loading content with Selenium method")
         
         # Setup Chrome options
         chrome_options = Options()
@@ -233,7 +233,7 @@ class WebContentLoader:
             
             for url in self.urls:
                 try:
-                    self.logger.info(f"🔄 Loading with Selenium: {url}")
+                    self.logger.info(f"Loading with Selenium: {url}")
                     driver.get(url)
                     
                     # Wait for page to load
@@ -261,15 +261,15 @@ class WebContentLoader:
                     if len(text_content) > 100 and not self._is_content_blocked(text_content):
                         doc = self._create_document(url, text_content, "selenium")
                         documents.append(doc)
-                        self.logger.info(f"✅ Successfully loaded: {url} ({len(text_content)} chars)")
+                        self.logger.info(f"Successfully loaded: {url} ({len(text_content)} chars)")
                     else:
-                        self.logger.warning(f"⚠️ Insufficient or blocked content from: {url}")
+                        self.logger.warning(f"Insufficient or blocked content from: {url}")
                     
                 except Exception as e:
-                    self.logger.error(f"❌ Failed to load {url} with Selenium: {e}")
+                    self.logger.error(f"Failed to load {url} with Selenium: {e}")
         
         except Exception as e:
-            self.logger.error(f"❌ Selenium setup failed: {e}")
+            self.logger.error(f"Selenium setup failed: {e}")
         
         finally:
             if driver:
@@ -284,7 +284,7 @@ class WebContentLoader:
         Returns:
             List of LangChain Document objects
         """
-        self.logger.info("🔄 Loading content with UnstructuredURLLoader method")
+        self.logger.info("Loading content with UnstructuredURLLoader method")
         
         documents = []
         
@@ -298,10 +298,10 @@ class WebContentLoader:
                 if len(content) > 100 and not self._is_content_blocked(content):
                     doc.metadata['method'] = 'unstructured_bulk'
                     documents.append(doc)
-                    self.logger.info(f"✅ Loaded via UnstructuredURLLoader: {doc.metadata.get('source', 'Unknown')}")
+                    self.logger.info(f"Loaded via UnstructuredURLLoader: {doc.metadata.get('source', 'Unknown')}")
         
         except Exception as e:
-            self.logger.warning(f"⚠️ Bulk loading failed: {e}")
+            self.logger.warning(f"Bulk loading failed: {e}")
         
         # Try loading individually for failed URLs
         loaded_sources = {doc.metadata.get('source') for doc in documents}
@@ -318,10 +318,10 @@ class WebContentLoader:
                     if len(content) > 100 and not self._is_content_blocked(content):
                         doc.metadata['method'] = 'unstructured_individual'
                         documents.append(doc)
-                        self.logger.info(f"✅ Loaded individually: {url}")
+                        self.logger.info(f"Loaded individually: {url}")
             
             except Exception as e:
-                self.logger.error(f"❌ Failed to load {url} individually: {e}")
+                self.logger.error(f"Failed to load {url} individually: {e}")
         
         return documents
     
@@ -342,7 +342,7 @@ class WebContentLoader:
         Returns:
             List of LangChain Document objects from the most successful method
         """
-        self.logger.info("🔄 Trying all loading methods")
+        self.logger.info("Trying all loading methods")
         
         methods = [
             ("UnstructuredURLLoader", self.load_with_unstructured),
@@ -374,7 +374,7 @@ class WebContentLoader:
             except Exception as e:
                 self.logger.error(f"❌ Method {method_name} failed: {e}")
         
-        self.logger.info(f"\n🏆 Best method: {best_method} with {len(best_documents)} documents")
+        self.logger.info(f"\nBest method: {best_method} with {len(best_documents)} documents")
         return best_documents
     
     def create_embeddings_pipeline(self, documents: List[Document], 
@@ -396,7 +396,7 @@ class WebContentLoader:
         if not documents:
             raise ValueError("No documents provided for embedding pipeline")
         
-        self.logger.info(f"🔄 Creating embeddings pipeline with {len(documents)} documents")
+        self.logger.info(f"Creating embeddings pipeline with {len(documents)} documents")
         
         # Split documents
         text_splitter = RecursiveCharacterTextSplitter(
@@ -404,63 +404,17 @@ class WebContentLoader:
             chunk_overlap=chunk_overlap
         )
         docs = text_splitter.split_documents(documents)
-        self.logger.info(f"📄 Split into {len(docs)} chunks")
+        self.logger.info(f"Split into {len(docs)} chunks")
         
         # Load and wrap the model
-        self.logger.info(f"🤖 Loading embedding model: {model_name}")
+        self.logger.info(f"Loading embedding model: {model_name}")
         model = SentenceTransformer(model_name)
         embedding_model = SentenceTransformerEmbeddings(model_name=model_name)
         
         # Create FAISS vector store
-        self.logger.info("🔗 Creating FAISS vector store")
+        self.logger.info("Creating FAISS vector store")
         vectorstore = FAISS.from_documents(docs, embedding_model)
         
-        self.logger.info("✅ Embedding pipeline completed successfully")
+        self.logger.info("Embedding pipeline completed successfully")
         return vectorstore
 
-# Example usage and testing
-if __name__ == "__main__":
-    # Example URLs
-    urls = [
-        "https://nation.africa/kenya/news",
-        "https://www.president.go.ke/administration/office-of-the-first-lady/",
-        "https://www.standardmedia.co.ke/",  # Alternative source
-    ]
-    
-    # Initialize the loader
-    loader = WebContentLoader(urls)
-    
-    # Try all methods and get the best results
-    documents = loader.load_all_methods()
-    
-    if documents:
-        print(f"\n🎉 Successfully loaded {len(documents)} documents")
-        
-        # Show document details
-        for i, doc in enumerate(documents):
-            print(f"\nDocument {i+1}:")
-            print(f"  Source: {doc.metadata.get('source', 'Unknown')}")
-            print(f"  Method: {doc.metadata.get('method', 'Unknown')}")
-            print(f"  Length: {len(doc.page_content)} characters")
-            print(f"  Preview: {doc.page_content[:200]}...")
-        
-        # Create embeddings pipeline
-        try:
-            vectorstore = loader.create_embeddings_pipeline(documents)
-            print(f"\n🎯 Successfully created vector store with {vectorstore.index.ntotal} embeddings")
-            
-            # Test similarity search
-            query = "government news Kenya"
-            results = vectorstore.similarity_search(query, k=2)
-            print(f"\n🔍 Test query '{query}' returned {len(results)} results")
-            
-        except Exception as e:
-            print(f"\n❌ Failed to create embeddings: {e}")
-    
-    else:
-        print("\n❌ No documents were successfully loaded")
-        print("💡 Consider:")
-        print("  - Checking your internet connection")
-        print("  - Trying different URLs")
-        print("  - Using a VPN if blocked regionally")
-        print("  - Installing ChromeDriver for Selenium method")
