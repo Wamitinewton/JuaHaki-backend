@@ -34,3 +34,4 @@ build/
 JuaHaki-AI/.env
 JuaHaki-AI/embeddings/
 keys.properties
+JuaHaki-AI/hakienv/
