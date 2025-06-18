@@ -11,6 +11,7 @@ from langchain.vectorstores import FAISS
 from langchain.chat_models import ChatOpenAI
 from web_scrapper import WebContentLoader
 
+
 load_dotenv()
 
 # Constants
@@ -41,22 +42,7 @@ def create_prompt_template():
         template=PROMPT_TEMPLATE, input_variables=["context", "question"]
     )
 
-def scrape_web_content(url: str) -> json:
-    """
-    Scrape web content from the given URL and return it as JSON.
-    
-    Args:
-        url (str): The URL to scrape.
-    
-    Returns:
-        json: The scraped content in JSON format.
-    """
-    documents = load_web_content(url)
-    split_docs = split_documents(documents)
-    vector_store = create_vector_store(split_docs)
-    retriever = vector_store.as_retriever(search_kwargs={"k": 3})
-    content = run_qa_chain(retriever)
-    return json.dumps(content, indent=2)
+
 
 def load_web_content(urls: list):
     """Load web content using WebContentLoader."""
@@ -91,6 +77,24 @@ def load_vector_store():
     """Load the FAISS vector store from a file."""
     with open(FAISS_STORE_PATH, "rb") as f:
         return pickle.load(f)
+    
+
+def scrape_web_content(url: str) -> json:
+    """
+    Scrape web content from the given URL and return it as JSON.
+    
+    Args:
+        url (str): The URL to scrape.
+    
+    Returns:
+        json: The scraped content in JSON format.
+    """
+    documents = load_web_content(url)
+    split_docs = split_documents(documents)
+    vector_store = create_vector_store(split_docs)
+    retriever = vector_store.as_retriever(search_kwargs={"k": 3})
+    content = run_qa_chain(retriever)
+    return json.dumps(content, indent=2)
 
 def run_qa_chain(retriever):
     """Run the QA chain and return the result."""
@@ -115,3 +119,29 @@ def extract_content(result):
         "answer": answer,
         "sources": sources
     }
+
+#load web content using either custom loader , langchain's web loader,beautiful soup or selenium
+def load_with_specific_loader(url: str, loader_type: str = "custom") -> list:
+    """
+    Load web content using a specific loader type.
+    
+    Args:
+        url (str): The URL to load.
+        loader_type (str): The type of loader to use ("custom", "langchain", "beautiful_soup", "selenium").
+    
+    Returns:
+        list: A list of documents loaded from the URL.
+    """
+
+    loader = WebContentLoader(url)
+    if loader_type == "custom":
+       
+        return loader.load_with_custom_requests([url])
+    elif loader_type == "selenium":
+        return loader.load_with_selenium([url])
+    elif loader_type == "beautiful_soup":
+       return loader.load_with_beautifulsoup([url])
+    elif loader_type == "langchain":
+        return loader.load_with_unstructured([url])
+    else:
+        raise ValueError("Unsupported loader type.")
