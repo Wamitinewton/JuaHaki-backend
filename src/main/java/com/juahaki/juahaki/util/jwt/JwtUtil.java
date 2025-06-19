@@ -1,5 +1,6 @@
 package com.juahaki.juahaki.util.jwt;
 
+import com.juahaki.juahaki.enums.Role;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -38,6 +39,7 @@ public class JwtUtil {
         if (userDetails instanceof com.juahaki.juahaki.model.user.User user) {
             claims.put("userId", user.getId());
             claims.put("email", user.getEmail());
+            claims.put("role", user.getRole().name());
         }
 
         return createToken(claims, userDetails.getUsername(), jwtExpirationMs);
@@ -50,6 +52,7 @@ public class JwtUtil {
         if (userDetails instanceof com.juahaki.juahaki.model.user.User user) {
             claims.put("userId", user.getId());
             claims.put("email", user.getEmail());
+            claims.put("role", user.getRole().name());
         }
 
         return createToken(claims, userDetails.getUsername(), jwtRefreshExpirationMs);
@@ -85,6 +88,13 @@ public class JwtUtil {
 
     public String getEmailFromToken(String token) {
         return getClaimsFromToken(token, claims -> (String) claims.get("email"));
+    }
+
+    public Role getRoleFromToken(String token) {
+        return getClaimsFromToken(token, claims -> {
+            String roleName = (String) claims.get("role");
+            return roleName != null ? Role.fromString(roleName) : null;
+        });
     }
 
     public String getTokenType(String token) {
@@ -151,5 +161,23 @@ public class JwtUtil {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public Boolean hasRole(String token, Role role) {
+        try {
+            Role tokenRole = getRoleFromToken(token);
+            return tokenRole != null && tokenRole.equals(role);
+        } catch (Exception e) {
+            log.error("Error checking role from token: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    public Boolean isAdmin(String token) {
+        return hasRole(token, Role.ADMIN);
+    }
+
+    public Boolean isUser(String token) {
+        return hasRole(token, Role.USER);
     }
 }

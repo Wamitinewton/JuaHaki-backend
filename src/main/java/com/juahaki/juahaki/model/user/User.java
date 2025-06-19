@@ -1,10 +1,12 @@
 package com.juahaki.juahaki.model.user;
 
 import com.juahaki.juahaki.enums.AuthProvider;
+import com.juahaki.juahaki.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -52,6 +54,11 @@ public class User implements UserDetails {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private Role role = Role.USER;
+
     @Builder.Default
     @Column(name = "email_verified")
     private Boolean emailVerified = false;
@@ -85,7 +92,7 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return List.of(new SimpleGrantedAuthority(role.getAuthority()));
     }
 
     @Override
@@ -124,5 +131,14 @@ public class User implements UserDetails {
 
     public boolean isLocalUser() {
         return provider == AuthProvider.LOCAL;
+    }
+
+    // Convenience methods for role checking
+    public boolean isAdmin() {
+        return this.role == Role.ADMIN;
+    }
+
+    public boolean isUser() {
+        return this.role == Role.USER;
     }
 }

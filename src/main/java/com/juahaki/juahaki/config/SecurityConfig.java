@@ -79,6 +79,16 @@ public class SecurityConfig {
                                 "/oauth2/**",
                                 "/oauth_test_page.html")
                         .permitAll()
+
+                        .requestMatchers("/api/v1/admin/**")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers("/api/v1/users/**")
+                        .hasAnyRole("USER", "ADMIN")
+
+                        .requestMatchers("/api/v1/profile/**")
+                        .hasAnyRole("USER", "ADMIN")
+
                         .anyRequest().authenticated())
                 .oauth2Login(oauth2 -> oauth2
                         .authorizationEndpoint(authorization -> authorization

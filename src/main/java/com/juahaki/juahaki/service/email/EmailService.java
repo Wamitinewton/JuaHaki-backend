@@ -1,13 +1,11 @@
 package com.juahaki.juahaki.service.email;
 
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.juahaki.juahaki.dto.email.EmailRequest;
+import com.juahaki.juahaki.enums.Role;
 import com.juahaki.juahaki.exception.EmailServiceException;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -15,10 +13,10 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
-import lombok.RequiredArgsConstructor;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +33,12 @@ public class EmailService implements IEmailService {
 
     @Value("${app.otp.expiry-minutes:10}")
     private int otpExpiryMinutes;
+
+    @Value("${app.support.phone:+254-700-000-000}")
+    private String supportPhone;
+
+    @Value("${app.base-url:https://juahaki.com}")
+    private String baseUrl;
 
     @Override
     public void sendEmail(EmailRequest emailRequest) {
@@ -158,6 +162,59 @@ public class EmailService implements IEmailService {
         sendEmail(emailRequest);
     }
 
+    @Override
+    public void sendAccountLockedNotification(String email, String firstName) {
+        Map<String, Object> variables = buildCommonVariables();
+        variables.put("firstName", firstName);
+        variables.put("timestamp", getCurrentTimestamp());
+
+        EmailRequest emailRequest = EmailRequest.builder()
+                .to(email)
+                .subject("🔒 Account Locked - JuaHaki")
+                .templateName("account-locked")
+                .variables(variables)
+                .isHtml(true)
+                .build();
+
+        sendEmail(emailRequest);
+    }
+
+    @Override
+    public void sendAccountUnlockedNotification(String email, String firstName) {
+        Map<String, Object> variables = buildCommonVariables();
+        variables.put("firstName", firstName);
+        variables.put("timestamp", getCurrentTimestamp());
+
+        EmailRequest emailRequest = EmailRequest.builder()
+                .to(email)
+                .subject("🔓 Account Unlocked - JuaHaki")
+                .templateName("account-unlocked")
+                .variables(variables)
+                .isHtml(true)
+                .build();
+
+        sendEmail(emailRequest);
+    }
+
+    @Override
+    public void sendRoleChangeNotification(String email, String firstName, Role oldRole, Role newRole) {
+        Map<String, Object> variables = buildCommonVariables();
+        variables.put("firstName", firstName);
+        variables.put("oldRole", formatRoleName(oldRole));
+        variables.put("newRole", formatRoleName(newRole));
+        variables.put("timestamp", getCurrentTimestamp());
+
+        EmailRequest emailRequest = EmailRequest.builder()
+                .to(email)
+                .subject("👤 Account Role Updated - JuaHaki")
+                .templateName("role-change")
+                .variables(variables)
+                .isHtml(true)
+                .build();
+
+        sendEmail(emailRequest);
+    }
+
     private String processTemplate(String templateName, Map<String, Object> variables) {
         Context context = new Context();
         if (variables != null) {
@@ -176,13 +233,22 @@ public class EmailService implements IEmailService {
     private Map<String, Object> buildCommonVariables() {
         Map<String, Object> variables = new HashMap<>();
         variables.put("supportEmail", fromEmail);
+        variables.put("supportPhone", supportPhone);
         variables.put("companyName", "JuaHaki Civic Educator");
         variables.put("currentYear", java.time.Year.now().getValue());
+        variables.put("baseUrl", baseUrl);
+        variables.put("loginUrl", baseUrl + "/login");
+        variables.put("contactUrl", baseUrl + "/contact");
         return variables;
     }
 
     private String getCurrentTimestamp() {
         return LocalDateTime.now()
                 .format(DateTimeFormatter.ofPattern("MMMM dd, yyyy 'at' hh:mm a"));
+    }
+
+    private String formatRoleName(Role role) {
+        if (role == null) return "Unknown";
+        return role.name().toLowerCase().replace("_", " ");
     }
 }

@@ -114,12 +114,12 @@ public class OtpService implements IOtpService {
 
     @Override
     @Transactional
-    public void resendEmailVerificationOtp(String email) {
-        if (!StringUtils.hasText(email)) {
+    public void resendEmailVerificationOtp(String emailOrUsername) {
+        if (!StringUtils.hasText(emailOrUsername)) {
             throw new IllegalArgumentException("Email is required");
         }
 
-        User user = userRepository.findByEmail(email.toLowerCase().trim())
+        User user = userRepository.findByUsernameOrEmail(emailOrUsername.toLowerCase().trim(), emailOrUsername.toLowerCase().trim())
                 .orElseThrow(() -> new CustomException("User not found"));
 
         if (user.getEmailVerified()) {
