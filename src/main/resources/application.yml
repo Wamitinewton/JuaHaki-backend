@@ -5,7 +5,7 @@ spring:
     import: "file:keys.properties"
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         default_schema: public
@@ -68,6 +68,15 @@ app:
   oauth2:
     authorizedRedirectUri: ${oauth2.authorized.redirect.uri}
     webRedirectUri: ${oauth2.web.redirect.uri}
+
+    admin:
+      initialize: true
+      default:
+        username: ${admin.username}
+        email: ${admin.email}
+        password: ${admin.password}
+        firstname: ${admin.firstname}
+        lastname: ${admin.lastname}
 
 api:
   prefix: api/v1

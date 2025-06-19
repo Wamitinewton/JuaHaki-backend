@@ -18,13 +18,13 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
     Optional<User> findByEmail(String email);
 
-    Optional<User> findByUsername(String username);
-
     Boolean existsByEmail(String email);
 
     Boolean existsByUsername(String username);
 
     Optional<User> findByUsernameOrEmail(String username, String email);
+
+    boolean existsByRole(Role role);
 
 
     long countByIsEnabledTrue();
@@ -56,28 +56,4 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     @Query("SELECT u FROM User u WHERE u.updatedAt < :cutoffDate AND u.isEnabled = true")
     List<User> findInactiveUsers(@Param("cutoffDate") LocalDateTime cutoffDate);
 
-    List<User> findByRole(Role role);
-
-    List<User> findByProvider(AuthProvider provider);
-
-    List<User> findByEmailVerified(Boolean emailVerified);
-
-    List<User> findByIsEnabled(Boolean isEnabled);
-
-    List<User> findByIsAccountNonLocked(Boolean isAccountNonLocked);
-
-    List<User> findByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
-
-    List<User> findByUpdatedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
-
-    @Query("SELECT u FROM User u WHERE u.isEnabled = false AND u.createdAt > :date")
-    List<User> findRecentlyDeactivatedUsers(@Param("date") LocalDateTime date);
-
-    @Query("SELECT u FROM User u WHERE u.emailVerified = false AND u.createdAt < :date")
-    List<User> findUnverifiedUsersOlderThan(@Param("date") LocalDateTime date);
-
-    @Query("SELECT COUNT(u) FROM User u WHERE u.provider = :provider AND u.createdAt BETWEEN :startDate AND :endDate")
-    long countByProviderAndCreatedAtBetween(@Param("provider") AuthProvider provider,
-                                            @Param("startDate") LocalDateTime startDate,
-                                            @Param("endDate") LocalDateTime endDate);
 }

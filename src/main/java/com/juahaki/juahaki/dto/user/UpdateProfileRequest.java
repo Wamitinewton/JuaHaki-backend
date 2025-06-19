@@ -8,7 +8,6 @@ import lombok.Data;
 @Data
 public class UpdateProfileRequest {
 
-    @NotBlank(message = "First name is required")
     @Size(min = 1, max = 50, message = "First name must be between 1 and 50 characters")
     private String firstName;
 
