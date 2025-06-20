@@ -1,12 +1,12 @@
 package com.juahaki.juahaki.service.admin.user;
 
 
+import com.juahaki.juahaki.dto.admin.user.AdminUserPageResponse;
 import com.juahaki.juahaki.dto.admin.user.AdminUserResponse;
 import com.juahaki.juahaki.dto.admin.user.UserFilterRequest;
 import com.juahaki.juahaki.dto.admin.user.UserStatsResponse;
 import com.juahaki.juahaki.enums.Role;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
@@ -14,7 +14,7 @@ import java.util.List;
 public interface IAdminUserManagementService {
 
 
-    Page<AdminUserResponse> getAllUsers(HttpServletRequest request, UserFilterRequest filterRequest, Pageable pageable);
+    AdminUserPageResponse getAllUsers(HttpServletRequest request, UserFilterRequest filterRequest, Pageable pageable);
 
 
     AdminUserResponse getUserById(HttpServletRequest request, Long userId);

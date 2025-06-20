@@ -20,7 +20,7 @@ public class UserFilterRequest {
     private Boolean emailVerified;
     private Boolean isEnabled;
     private Boolean isAccountNonLocked;
-    private String searchTerm; // Search in name, username, email
+    private String searchTerm;
     private LocalDateTime createdAfter;
     private LocalDateTime createdBefore;
     private LocalDateTime updatedAfter;

@@ -1,10 +1,12 @@
 package com.juahaki.juahaki.service.admin.user;
 
+import com.juahaki.juahaki.dto.admin.user.AdminUserPageResponse;
 import com.juahaki.juahaki.dto.admin.user.AdminUserResponse;
 import com.juahaki.juahaki.dto.admin.user.UserFilterRequest;
 import com.juahaki.juahaki.dto.admin.user.UserStatsResponse;
 import com.juahaki.juahaki.enums.Role;
 import com.juahaki.juahaki.exception.CustomException;
+import com.juahaki.juahaki.mapper.AdminUserMapper;
 import com.juahaki.juahaki.model.user.User;
 import com.juahaki.juahaki.repository.user.UserRepository;
 import com.juahaki.juahaki.service.email.IEmailService;
@@ -13,7 +15,6 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -24,7 +25,6 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,18 +33,18 @@ public class AdminUserManagementService implements IAdminUserManagementService {
 
     private final UserRepository userRepository;
     private final JwtHelperService jwtHelperService;
-    private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
     private final IEmailService emailService;
+    private final AdminUserMapper adminUserMapper;
 
     @Override
-    public Page<AdminUserResponse> getAllUsers(HttpServletRequest request, UserFilterRequest filterRequest, Pageable pageable) {
+    public AdminUserPageResponse getAllUsers(HttpServletRequest request, UserFilterRequest filterRequest, Pageable pageable) {
         validateAdminAccess(request);
 
         Specification<User> spec = createUserSpecification(filterRequest);
         Page<User> users = userRepository.findAll(spec, pageable);
 
-        return users.map(this::mapToAdminUserResponse);
+        return adminUserMapper.buildAdminUserPageResponse(users);
     }
 
     @Override
@@ -54,7 +54,7 @@ public class AdminUserManagementService implements IAdminUserManagementService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException("User not found with ID: " + userId));
 
-        return mapToAdminUserResponse(user);
+        return adminUserMapper.mapToAdminUserResponse(user);
     }
 
     @Override
@@ -74,7 +74,6 @@ public class AdminUserManagementService implements IAdminUserManagementService {
         userRepository.deleteById(userId);
         log.info("Admin {} deleted user with ID: {}", currentUserId, userId);
     }
-
 
     @Override
     @Transactional
@@ -100,7 +99,7 @@ public class AdminUserManagementService implements IAdminUserManagementService {
 
         log.info("Admin {} locked user with ID: {}", currentUserId, userId);
 
-        return mapToAdminUserResponse(savedUser);
+        return adminUserMapper.mapToAdminUserResponse(savedUser);
     }
 
     @Override
@@ -110,6 +109,10 @@ public class AdminUserManagementService implements IAdminUserManagementService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException("User not found with ID: " + userId));
+
+        if (user.isAccountNonLocked()) {
+            throw new CustomException("Cannot unlock an already active account with ID: " + userId);
+        }
 
         user.setAccountNonLocked(true);
         User savedUser = userRepository.save(user);
@@ -123,7 +126,7 @@ public class AdminUserManagementService implements IAdminUserManagementService {
         log.info("Admin {} unlocked user with ID: {}",
                 jwtHelperService.getCurrentUserIdFromRequest(request), userId);
 
-        return mapToAdminUserResponse(savedUser);
+        return adminUserMapper.mapToAdminUserResponse(savedUser);
     }
 
     @Override
@@ -139,6 +142,11 @@ public class AdminUserManagementService implements IAdminUserManagementService {
             throw new CustomException("Cannot change your own role");
         }
 
+        if (user.getRole() == newRole) {
+            throw new CustomException("User already has the role: " + newRole.name());
+
+        }
+
         Role oldRole = user.getRole();
         user.setRole(newRole);
         User savedUser = userRepository.save(user);
@@ -152,9 +160,8 @@ public class AdminUserManagementService implements IAdminUserManagementService {
         log.info("Admin {} changed role of user {} from {} to {}",
                 currentUserId, userId, oldRole, newRole);
 
-        return mapToAdminUserResponse(savedUser);
+        return adminUserMapper.mapToAdminUserResponse(savedUser);
     }
-
 
     @Override
     public UserStatsResponse getUserStatistics(HttpServletRequest request) {
@@ -190,9 +197,7 @@ public class AdminUserManagementService implements IAdminUserManagementService {
         }
 
         List<User> users = userRepository.findBySearchTerm(searchTerm.toLowerCase());
-        return users.stream()
-                .map(this::mapToAdminUserResponse)
-                .collect(Collectors.toList());
+        return adminUserMapper.mapToAdminUserResponseList(users);
     }
 
     @Override
@@ -200,9 +205,7 @@ public class AdminUserManagementService implements IAdminUserManagementService {
         validateAdminAccess(request);
 
         List<User> users = userRepository.findRecentlyRegisteredUsers(limit);
-        return users.stream()
-                .map(this::mapToAdminUserResponse)
-                .collect(Collectors.toList());
+        return adminUserMapper.mapToAdminUserResponseList(users);
     }
 
     @Override
@@ -211,9 +214,7 @@ public class AdminUserManagementService implements IAdminUserManagementService {
 
         LocalDateTime cutoffDate = LocalDateTime.now().minusDays(daysSinceLastActivity);
         List<User> users = userRepository.findInactiveUsers(cutoffDate);
-        return users.stream()
-                .map(this::mapToAdminUserResponse)
-                .collect(Collectors.toList());
+        return adminUserMapper.mapToAdminUserResponseList(users);
     }
 
     @Override
@@ -271,7 +272,6 @@ public class AdminUserManagementService implements IAdminUserManagementService {
 
         log.info("Admin {} bulk deactivated {} users", currentUserId, users.size());
     }
-
 
     private void validateAdminAccess(HttpServletRequest request) {
         if (!jwtHelperService.isAdmin(request)) {
@@ -335,9 +335,4 @@ public class AdminUserManagementService implements IAdminUserManagementService {
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
     }
-
-    private AdminUserResponse mapToAdminUserResponse(User user) {
-        return modelMapper.map(user, AdminUserResponse.class);
-    }
-
 }

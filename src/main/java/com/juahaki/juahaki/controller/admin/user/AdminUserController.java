@@ -1,5 +1,6 @@
 package com.juahaki.juahaki.controller.admin.user;
 
+import com.juahaki.juahaki.dto.admin.user.AdminUserPageResponse;
 import com.juahaki.juahaki.dto.admin.user.AdminUserResponse;
 import com.juahaki.juahaki.dto.admin.user.UserFilterRequest;
 import com.juahaki.juahaki.dto.admin.user.UserStatsResponse;
@@ -9,10 +10,8 @@ import com.juahaki.juahaki.service.admin.user.IAdminUserManagementService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +32,7 @@ public class AdminUserController {
             @Valid UserFilterRequest filterRequest,
             @PageableDefault(size = 20, sort = "createdAt") Pageable pageable) {
 
-        Page<AdminUserResponse> users = adminUserManagementService.getAllUsers(request, filterRequest, pageable);
+        AdminUserPageResponse users = adminUserManagementService.getAllUsers(request, filterRequest, pageable);
         return ResponseEntity.ok(new ApiResponse("Users retrieved successfully", users));
     }
 
