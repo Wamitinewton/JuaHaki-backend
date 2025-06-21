@@ -15,7 +15,7 @@ from web_scrapper import WebContentLoader
 load_dotenv()
 
 # Constants
-FAISS_STORE_PATH = "faiss_store_openai.pkl"
+FAISS_STORE_PATH = "vectors/faiss_store_openai.pkl"
 PROMPT_TEMPLATE = """Use the following pieces of context to answer the question at the end. 
 If you don't know the answer, just say that you don't know, don't try to make up an answer.
 Always include the source URLs for the information you use in your answer.

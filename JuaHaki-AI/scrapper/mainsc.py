@@ -3,7 +3,9 @@ from langchain.chains import RetrievalQA
 from web_scrapper import WebContentLoader
 
 
-def load_content(request):
+def load_content(request,urls):
+
+
     """
     Load content from the provided URLs and save it to the vector store.
     
@@ -13,10 +15,11 @@ def load_content(request):
     Returns:
         dict: A dictionary indicating success or failure.
     """
-    urls = request.get("urls", [])
+
+    # urls = request.get("urls", [])
     
-    if not urls:
-        return {"error": "Invalid request. 'urls' are required."}
+    # if not urls:
+    #     return {"error": "Invalid request. 'urls' are required."}
     
     documents = load_web_content(urls)
     split_docs = split_documents(documents)
@@ -24,7 +27,8 @@ def load_content(request):
     
     return {"message": "Content loaded successfully."}
 
-def load_specific_tool(request):
+def load_specific_tool(request,url, loader_type):
+
     """
     Load web content using a specific loader type and return the documents.
     
@@ -34,11 +38,11 @@ def load_specific_tool(request):
     Returns:
         dict: A dictionary containing the loaded documents.
     """
-    url = request.get("url", "")
-    loader_type = request.get("loader_type", "custom")
+    # url = request.get("url", "")
+    # loader_type = request.get("loader_type", "custom")
     
-    if not url:
-        return {"error": "Invalid request. 'url' is required."}
+    # if not url:
+    #     return {"error": "Invalid request. 'url' is required."}
     
     documents = load_with_specific_loader(url, loader_type)
     split_docs = split_documents(documents)
@@ -47,7 +51,7 @@ def load_specific_tool(request):
     
     
 
-def get_answer(request):
+def get_answer(request,question):
     """
     Process a request to get an answer and sources based on the provided question.
     
@@ -57,10 +61,10 @@ def get_answer(request):
     Returns:
         dict: A dictionary containing the answer and sources.
     """
-    question = request.get("question", "")
+    # question = request.get("question", "")
     
-    if not question:
-        return {"error": "Invalid request. 'question' is required."}
+    # if not question:
+    #     return {"error": "Invalid request. 'question' is required."}
     
     vector_store = load_vector_store()
     retriever = vector_store.as_retriever(search_kwargs={"k": 3})
@@ -78,7 +82,7 @@ def get_answer(request):
     result = qa_chain({"query": question})
     return extract_content(result)
 
-def get_answer_with_specific_loader(request):
+def get_answer_with_specific_loader(request,question):
     """
     Process a request to get an answer using a specific loader type.
     
@@ -89,10 +93,10 @@ def get_answer_with_specific_loader(request):
         dict: A dictionary containing the answer and sources.
     """
    
-    question = request.get("question", "")
+    # question = request.get("question", "")
     
-    if not question:
-        return {"error": "Invalid request. 'url' and 'question' are required."}
+    # if not question:
+    #     return {"error": "Invalid request. 'url' and 'question' are required."}
     
    
     vector_store = load_vector_store()

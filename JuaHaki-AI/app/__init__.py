@@ -5,6 +5,7 @@ import os
 from .exceptions import ChatbotError, ValidationError
 from .routes import api_bp
 from .chatbot import CivilRightsChatbot
+from scrapper
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +55,9 @@ def create_app(config_class=None):
             return jsonify(status), 503
         
         return jsonify(status), 200
+    
+    @app.route('/')
+    def load_contentPage():
     
     logger.info("Flask application created successfully")
     return app
