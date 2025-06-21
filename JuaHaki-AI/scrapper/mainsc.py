@@ -1,6 +1,6 @@
-from route import load_web_content, split_documents, create_vector_store, initialize_llm, create_prompt_template, extract_content,load_vector_store,load_with_specific_loader
+from .route import load_web_content, split_documents, create_vector_store, initialize_llm, create_prompt_template, extract_content,load_vector_store,load_with_specific_loader
 from langchain.chains import RetrievalQA
-from web_scrapper import WebContentLoader
+from .web_scrapper import WebContentLoader
 
 
 def load_content(request,urls):

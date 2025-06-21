@@ -4,7 +4,7 @@ from scrapper.mainsc import get_answer, get_answer_with_specific_loader,load_con
 
 app = Flask(__name__)
 
-@app.route('load_content', methods=['POST'])
+@app.route('/load_content', methods=['POST'])
 def load_content_route():
     """
     Route to load content from provided URLs.
@@ -70,3 +70,6 @@ def get_answer_with_specific_loader_route():
     
     response = get_answer_with_specific_loader(question)
     return jsonify(response)
+
+if __name__ == '__main__':
+    app.run(debug=True)

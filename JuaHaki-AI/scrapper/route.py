@@ -9,10 +9,11 @@ from langchain.prompts import PromptTemplate
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import FAISS
 from langchain.chat_models import ChatOpenAI
-from web_scrapper import WebContentLoader
+from .web_scrapper import WebContentLoader
 
 
 load_dotenv()
+
 
 # Constants
 FAISS_STORE_PATH = "vectors/faiss_store_openai.pkl"
