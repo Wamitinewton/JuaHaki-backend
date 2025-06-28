@@ -5,7 +5,7 @@ spring:
     import: "file:keys.properties"
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         default_schema: public
@@ -106,6 +106,19 @@ app:
   oauth2:
     authorizedRedirectUri: ${oauth2.authorized.redirect.uri}
     webRedirectUri: ${oauth2.web.redirect.uri}
+
+    quiz:
+      max-context-documents: 10
+      similarity-threshold: 0.6
+      document:
+        processing:
+          chunk-size: 1000
+          chunk-overlap: 200
+          max-file-size: 52428800
+      async:
+        core-pool-size: 5
+        max-pool-size: 10
+        queue-capacity: 100
 
 api:
   prefix: api/v1
