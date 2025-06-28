@@ -14,7 +14,7 @@ public interface ICivicQuizService {
 
     StartCivicQuizResponse startQuiz(HttpServletRequest request);
 
-    SubmitCivicAnswerRequest submitAnswer(SubmitCivicAnswerRequest request, HttpServletRequest httpServletRequest);
+    SubmitCivicAnswerResponse submitAnswer(SubmitCivicAnswerRequest request, HttpServletRequest httpServletRequest);
 
     CivicQuizSessionResponse getSessionStatus(String sessionId, HttpServletRequest request);
 

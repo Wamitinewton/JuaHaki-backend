@@ -1,5 +1,6 @@
 package com.juahaki.juahaki.service.quiz;
 
+import com.juahaki.juahaki.dto.quiz.civic.CivicQuizSessionData;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -35,11 +36,11 @@ public class QuizRedisService implements IQuizRedisService {
         try {
             String redisKey = buildRedisKey(sessionId);
             Object sessionData = redisTemplate.opsForValue().get(redisKey);
-           if (sessionData != null && clazz.isInstance(sessionData)) {
-               return Optional.of((T) sessionData);
-           }
+            if (sessionData != null && clazz.isInstance(sessionData)) {
+                return Optional.of((T) sessionData);
+            }
 
-           return Optional.empty();
+            return Optional.empty();
         } catch (Exception e) {
             return Optional.empty();
         }
@@ -112,6 +113,7 @@ public class QuizRedisService implements IQuizRedisService {
         }
     }
 
+    @Override
     public boolean storeCivicQuizSession(String sessionId, CivicQuizSessionData sessionData, long timeout, TimeUnit timeUnit) {
         try {
             String redisKey = CIVIC_QUIZ_SESSION_PREFIX + sessionId;
@@ -124,6 +126,7 @@ public class QuizRedisService implements IQuizRedisService {
         }
     }
 
+    @Override
     public Optional<CivicQuizSessionData> getCivicQuizSession(String sessionId) {
         try {
             String redisKey = CIVIC_QUIZ_SESSION_PREFIX + sessionId;
@@ -142,6 +145,7 @@ public class QuizRedisService implements IQuizRedisService {
         }
     }
 
+    @Override
     public boolean updateCivicQuizSession(String sessionId, CivicQuizSessionData sessionData, long timeout, TimeUnit timeUnit) {
         try {
             String redisKey = CIVIC_QUIZ_SESSION_PREFIX + sessionId;
@@ -152,6 +156,7 @@ public class QuizRedisService implements IQuizRedisService {
         }
     }
 
+    @Override
     public boolean removeCivicQuizSession(String sessionId) {
         try {
             String redisKey = CIVIC_QUIZ_SESSION_PREFIX + sessionId;
@@ -168,21 +173,5 @@ public class QuizRedisService implements IQuizRedisService {
             return CIVIC_QUIZ_SESSION_PREFIX + sessionId;
         }
         return GENERAL_QUIZ_SESSION_PREFIX + sessionId;
-    }
-
-    /**
-     * Session data class for civic quiz
-     */
-    @Setter
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @ToString
-    public static class CivicQuizSessionData {
-        private Long userId;
-        private Long quizId;
-        private int currentQuestionNumber;
-        private Long attemptId;
-
     }
 }
