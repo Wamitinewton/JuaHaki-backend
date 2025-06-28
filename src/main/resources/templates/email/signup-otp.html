@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Account</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .content {
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .greeting {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .message {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .otp-container {
+            background-color: #f8f9fa;
+            border: 2px dashed #667eea;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        .otp-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        .otp-code {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            letter-spacing: 8px;
+            font-family: 'Courier New', monospace;
+        }
+        .expiry-info {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px 16px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .expiry-text {
+            font-size: 14px;
+            color: #856404;
+            margin: 0;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #e9ecef;
+        }
+        .footer-text {
+            font-size: 12px;
+            color: #6c757d;
+            margin: 0;
+        }
+        .support-link {
+            color: #667eea;
+            text-decoration: none;
+        }
+        @media only screen and (max-width: 480px) {
+            .container {
+                margin: 0;
+                box-shadow: none;
+            }
+            .header {
+                padding: 20px 15px;
+            }
+            .header h1 {
+                font-size: 20px;
+            }
+            .content {
+                padding: 20px 15px;
+            }
+            .otp-code {
+                font-size: 28px;
+                letter-spacing: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🇰🇪 JuaHaki</h1>
+        </div>
+        
+        <div class="content">
+            <div class="greeting">
+                Hello <span th:text="${firstName}">User</span>! 👋
+            </div>
+            
+            <div class="message">
+                Welcome to JuaHaki! Use the verification code below to complete your account setup.
+            </div>
+            
+            <div class="otp-container">
+                <div class="otp-label">Your Verification Code</div>
+                <div class="otp-code" th:text="${otp}">123456</div>
+            </div>
+            
+            <div class="expiry-info">
+                <p class="expiry-text">
+                    ⏰ This code expires in <span th:text="${expiryMinutes}">10</span> minutes
+                </p>
+            </div>
+            
+            <p style="font-size: 14px; color: #666; margin-top: 30px;">
+                If you didn't request this code, please ignore this email.
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p class="footer-text">
+                Need help? Contact us at 
+                <a href="#" th:href="'mailto:' + ${supportEmail}" class="support-link" th:text="${supportEmail}">support@juahaki.com</a>
+            </p>
+            <p class="footer-text">
+                © <span th:text="${currentYear}">2024</span> <span th:text="${companyName}">JuaHaki Civic Educator</span>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
