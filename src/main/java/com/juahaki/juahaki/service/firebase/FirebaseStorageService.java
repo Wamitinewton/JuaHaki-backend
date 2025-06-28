@@ -9,6 +9,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -26,6 +27,7 @@ public class FirebaseStorageService {
 
     private Storage storage;
 
+    @PostConstruct
     private void initializeFirebase() throws Exception {
         try {
             GoogleCredentials credentials = GoogleCredentials

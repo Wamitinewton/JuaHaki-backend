@@ -37,7 +37,7 @@ public class CivicQuestion {
     @Column(nullable = false)
     private String difficulty;
 
-    @OneToMany(mappedBy = "civicQuestion", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @OrderBy("optionLetter ASC")
     private List<QuestionOption> options;
 

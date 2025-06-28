@@ -13,9 +13,9 @@ import java.util.Optional;
 @Repository
 public interface QuestionOptionRepository extends JpaRepository<QuestionOption, Long> {
 
-    List<QuestionOption> findByQuestionOrderByOptionLetter(CivicQuestion civicQuestion);
+    List<QuestionOption> findByQuestionOrderByOptionLetter(CivicQuestion question);
 
-    Optional<QuestionOption> findByQuestionAndOptionLetter(CivicQuestion civicQuestion, String optionLetter);
+    Optional<QuestionOption> findByQuestionAndOptionLetter(CivicQuestion question, String optionLetter);
 
     @Query("SELECT qo FROM QuestionOption qo WHERE qo.question.id = :questionId ORDER BY qo.optionLetter")
     List<QuestionOption> findByQuestionIdOrderByOptionLetter(@Param("questionId") Long questionId);
