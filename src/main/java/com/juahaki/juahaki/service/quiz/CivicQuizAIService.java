@@ -51,10 +51,10 @@ public class CivicQuizAIService {
             Your task is to create a comprehensive daily civic quiz that educates Kenyan citizens about their rights,
             governance structures, constitutional provisions, and civic responsibilities.
             
-            **CONTEXT AND REFERENCE MATERIALS:**
+            CONTEXT AND REFERENCE MATERIALS:
             {context}
             
-            **QUIZ REQUIREMENTS:**
+            QUIZ REQUIREMENTS:
             - Generate exactly {questionCount} multiple-choice questions
             - Each question must have exactly 4 options (A, B, C, D)
             - Questions should cover diverse civic topics relevant to Kenya
@@ -62,7 +62,7 @@ public class CivicQuizAIService {
             - Ensure questions are educational and promote civic awareness
             - Focus on practical knowledge that empowers citizens
             
-            **TOPIC CATEGORIES TO INCLUDE:**
+            TOPIC CATEGORIES TO INCLUDE:
             - Constitutional Rights and Freedoms
             - Government Structure and Functions
             - Electoral Processes and Democracy
@@ -72,60 +72,31 @@ public class CivicQuizAIService {
             - Civic Duties and Responsibilities
             - Local Government and Devolution
             
-            **QUESTION QUALITY STANDARDS:**
-            1. **Accuracy**: All information must be factually correct and current
-            2. **Clarity**: Questions should be clear and unambiguous
-            3. **Educational Value**: Each question should teach something valuable
-            4. **Practical Relevance**: Focus on knowledge useful for informed citizenship
-            5. **Cultural Sensitivity**: Respect Kenya's diverse cultural landscape
-            6. **Progressive Difficulty**: Mix easy, medium, and challenging questions
+            QUESTION QUALITY STANDARDS:
+            1. Accuracy: All information must be factually correct and current
+            2. Clarity: Questions should be clear and unambiguous
+            3. Educational Value: Each question should teach something valuable
+            4. Practical Relevance: Focus on knowledge useful for informed citizenship
+            5. Cultural Sensitivity: Respect Kenya diverse cultural landscape
+            6. Progressive Difficulty: Mix easy, medium, and challenging questions
             
-            **RESPONSE FORMAT:**
-            You must respond with a valid JSON object containing the quiz data.
-            DO NOT include any text outside the JSON structure.
-            DO NOT use markdown code blocks or backticks.
+            Generate the quiz for date: {quizDate}
             
-            The JSON structure must be:
-            {
-              "title": "Daily Civic Knowledge Quiz - [Date]",
-              "description": "Test your knowledge of Kenyan civic matters, constitutional rights, and governance",
-              "questions": [
-                {
-                  "questionNumber": 1,
-                  "questionText": "Clear, specific question about civic knowledge",
-                  "category": "One of the categories listed above",
-                  "difficulty": "Easy|Medium|Hard",
-                  "options": [
-                    {"letter": "A", "text": "First option"},
-                    {"letter": "B", "text": "Second option"},
-                    {"letter": "C", "text": "Third option"},
-                    {"letter": "D", "text": "Fourth option"}
-                  ],
-                  "correctAnswer": "A|B|C|D",
-                  "explanation": "Detailed explanation of why this answer is correct and educational context",
-                  "sourceReference": "Reference to constitution article, law, or authoritative source"
-                }
-              ]
-            }
+            RESPONSE FORMAT INSTRUCTIONS:
+            You must respond with a valid JSON object only. Do not include any text outside the JSON structure.
+            Do not use markdown code blocks or backticks.
             
-            **EXAMPLE QUESTION:**
-            {
-              "questionNumber": 1,
-              "questionText": "According to the Constitution of Kenya 2010, what is the maximum number of terms a President can serve?",
-              "category": "Constitutional Rights and Freedoms",
-              "difficulty": "Medium",
-              "options": [
-                {"letter": "A", "text": "One term of 5 years"},
-                {"letter": "B", "text": "Two terms of 5 years each"},
-                {"letter": "C", "text": "Three terms of 4 years each"},
-                {"letter": "D", "text": "Unlimited terms"}
-              ],
-              "correctAnswer": "B",
-              "explanation": "Article 142(2) of the Constitution states that a person shall not hold office as President for more than two terms. Each presidential term is 5 years as per Article 136(1).",
-              "sourceReference": "Constitution of Kenya 2010, Articles 136(1) and 142(2)"
-            }
+            The JSON should have this structure:
+            - A title field with value: Daily Civic Knowledge Quiz - {quizDate}
+            - A description field explaining the quiz purpose
+            - A questions array containing exactly {questionCount} question objects
+            - Each question object should have: questionNumber, questionText, category, difficulty, options array, correctAnswer, explanation, sourceReference
+            - Each option object should have: letter (A/B/C/D) and text
             
-            Generate the quiz now for date: {quizDate}
+            EXAMPLE QUESTION STRUCTURE:
+            Question about constitutional rights with 4 options A through D, correct answer specified, detailed explanation provided, and source reference to constitution article.
+            
+            Generate the complete quiz now as valid JSON only.
             """;
 
     private static final List<String> CIVIC_CATEGORIES = Arrays.asList(
@@ -275,7 +246,7 @@ public class CivicQuizAIService {
 
     private QuizGenerationResponse generateQuizWithAI(String context, LocalDate quizDate, int questionCount) {
         try {
-            Prompt prompt = getPrompt(context, quizDate, questionCount);
+            Prompt prompt = createPromptTemplate(context, quizDate, questionCount);
             String response = chatModel.call(prompt).getResult().getOutput().getText();
 
             log.debug("Received AI response for quiz generation, length: {}", response.length());
@@ -292,22 +263,36 @@ public class CivicQuizAIService {
         }
     }
 
-    private static Prompt getPrompt(String context, LocalDate quizDate, int questionCount) {
+    // Fixed method using PromptTemplate properly
+    private Prompt createPromptTemplate(String context, LocalDate quizDate, int questionCount) {
         String difficultyDistribution = String.format(
                 "%d Easy, %d Medium, %d Hard",
                 questionCount / 3, questionCount / 3, questionCount - (2 * (questionCount / 3))
         );
 
-        PromptTemplate promptTemplate = new PromptTemplate(QUIZ_GENERATION_PROMPT);
-        Map<String, Object> promptVariables = Map.of(
-                "context", context,
-                "quizDate", quizDate.toString(),
-                "questionCount", questionCount,
-                "difficultyDistribution", difficultyDistribution
-        );
+        try {
+            PromptTemplate promptTemplate = new PromptTemplate(QUIZ_GENERATION_PROMPT);
 
-        Prompt prompt = promptTemplate.create(promptVariables);
-        return prompt;
+            Map<String, Object> promptVariables = Map.of(
+                    "context", context != null ? context : "",
+                    "quizDate", quizDate.toString(),
+                    "questionCount", String.valueOf(questionCount),
+                    "difficultyDistribution", difficultyDistribution
+            );
+
+            return promptTemplate.create(promptVariables);
+
+        } catch (Exception e) {
+            log.error("Error creating prompt template: {}", e.getMessage(), e);
+            // Fallback to manual string replacement if PromptTemplate fails
+            String manualPrompt = QUIZ_GENERATION_PROMPT
+                    .replace("{context}", context != null ? context : "")
+                    .replace("{quizDate}", quizDate.toString())
+                    .replace("{questionCount}", String.valueOf(questionCount))
+                    .replace("{difficultyDistribution}", difficultyDistribution);
+
+            return new Prompt(manualPrompt);
+        }
     }
 
     private String cleanJsonResponse(String response) {

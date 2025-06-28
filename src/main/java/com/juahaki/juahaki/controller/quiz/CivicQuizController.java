@@ -215,7 +215,6 @@ public class CivicQuizController {
         }
     }
 
-    // === Document Management Endpoints ===
 
     @PostMapping("/admin/documents/upload")
     @PreAuthorize("hasRole('ADMIN')")
@@ -324,7 +323,6 @@ public class CivicQuizController {
         }
     }
 
-    // === Maintenance Endpoints ===
 
     @PostMapping("/admin/maintenance/cleanup-expired")
     @PreAuthorize("hasRole('ADMIN')")

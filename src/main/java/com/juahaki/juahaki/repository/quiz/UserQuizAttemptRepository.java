@@ -21,11 +21,6 @@ public interface UserQuizAttemptRepository extends JpaRepository<UserQuizAttempt
 
     Optional<UserQuizAttempt> findBySessionId(String sessionId);
 
-    Optional<UserQuizAttempt> findByUserAndDailyQuiz(User user, DailyQuiz dailyQuiz);
-
-    List<UserQuizAttempt> findByUserOrderByStartedAtDesc(User user);
-
-    List<UserQuizAttempt> findByDailyQuizOrderByScoreDescStartedAtAsc(DailyQuiz dailyQuiz);
 
     @Query("SELECT uqa FROM UserQuizAttempt uqa WHERE uqa.user = :user AND uqa.dailyQuiz.quizDate = :date")
     Optional<UserQuizAttempt> findByUserAndQuizDate(@Param("user") User user, @Param("date") LocalDate date);
@@ -53,24 +48,6 @@ public interface UserQuizAttemptRepository extends JpaRepository<UserQuizAttempt
 
     @Query("SELECT uqa FROM UserQuizAttempt uqa WHERE uqa.user = :user AND uqa.status = 'COMPLETED' ORDER BY uqa.startedAt DESC")
     List<UserQuizAttempt> findCompletedAttemptsByUser(@Param("user") User user);
-
-    @Query("SELECT uqa FROM UserQuizAttempt uqa WHERE uqa.user = :user AND uqa.status = 'COMPLETED' ORDER BY uqa.startedAt DESC")
-    Page<UserQuizAttempt> findCompletedAttemptsByUser(@Param("user") User user, Pageable pageable);
-
-    @Query("SELECT COUNT(uqa) FROM UserQuizAttempt uqa WHERE uqa.user = :user AND uqa.status = 'COMPLETED'")
-    long countCompletedAttemptsByUser(@Param("user") User user);
-
-    @Query("SELECT AVG(uqa.score) FROM UserQuizAttempt uqa WHERE uqa.user = :user AND uqa.status = 'COMPLETED'")
-    Double findAverageScoreByUser(@Param("user") User user);
-
-    @Query("SELECT MAX(uqa.score) FROM UserQuizAttempt uqa WHERE uqa.user = :user AND uqa.status = 'COMPLETED'")
-    Integer findHighestScoreByUser(@Param("user") User user);
-
-    @Query("SELECT uqa FROM UserQuizAttempt uqa WHERE uqa.dailyQuiz.quizDate = :date ORDER BY uqa.score DESC, uqa.durationSeconds ASC")
-    List<UserQuizAttempt> findDailyLeaderboard(@Param("date") LocalDate date);
-
-    @Query("SELECT COUNT(DISTINCT uqa.user) FROM UserQuizAttempt uqa WHERE uqa.dailyQuiz.quizDate = :date AND uqa.status = 'COMPLETED'")
-    long countDistinctParticipantsByDate(@Param("date") LocalDate date);
 
     boolean existsByUserAndDailyQuiz(User user, DailyQuiz dailyQuiz);
 }
