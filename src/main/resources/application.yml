@@ -73,7 +73,7 @@ spring:
         host: ${qdrant.host.url}
         port: 6334
         api-key: ${qdrant.api.key}
-        collection-name: programming-knowledge-base
+        collection-name: juahaki-kb
         use-tls: true
   data:
     redis:

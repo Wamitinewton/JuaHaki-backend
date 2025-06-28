@@ -28,6 +28,7 @@ public class CivicQuizService implements ICivicQuizService {
     private final UserRepository userRepository;
     private final JwtHelperService jwtHelperService;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final IQuizRedisService quizRedisService;
 
 
     @Override
