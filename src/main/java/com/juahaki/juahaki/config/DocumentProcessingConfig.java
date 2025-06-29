@@ -16,7 +16,7 @@ import java.util.concurrent.Executor;
 @EnableAsync
 @EnableScheduling
 @Slf4j
-public class QuizAIConfig {
+public class DocumentProcessingConfig {
 
     @Value("${app.document.processing.chunk-size:1000}")
     private int chunkSize;

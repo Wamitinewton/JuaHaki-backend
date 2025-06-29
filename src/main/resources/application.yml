@@ -2,10 +2,12 @@ spring:
   application:
     name: juahaki
   config:
-    import: "file:keys.properties"
+    import: 
+      - "file:keys.properties"
+      - "classpath:quiz-config.yml"
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         default_schema: public

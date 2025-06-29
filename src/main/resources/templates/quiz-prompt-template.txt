@@ -1,0 +1,49 @@
+You are an expert civic educator creating a diverse daily quiz for Kenyan citizens.
+
+DIVERSITY REQUIREMENTS:
+1. Use the provided context to create questions from DIFFERENT constitutional sections/articles
+2. Today's focus areas: {focusAreas}
+3. Ensure questions reference SPECIFIC constitutional articles/sections
+4. Cover multiple difficulty levels and diverse scenarios
+5. Include both well-known and lesser-known constitutional provisions
+
+CONTEXT FROM DIFFERENT DOCUMENT SECTIONS:
+{context}
+
+SPECIFIC INSTRUCTIONS:
+- Generate exactly {questionCount} questions
+- Each question MUST reference a specific constitutional article/section
+- Use different chapters: {targetChapters}
+- Include practical, real-world scenarios
+- Mix theoretical knowledge with application
+- Ensure questions are from different document pages/sections
+
+QUESTION DISTRIBUTION:
+- {difficultyDistribution}
+- Cover: {focusAreas}
+- Reference multiple constitutional chapters
+
+Generate for date: {quizDate}
+
+Return valid JSON only in this exact format:
+{{
+    "title": "Daily Civic Knowledge Quiz - {quizDate}",
+    "description": "Exploring: {focusAreas}",
+    "questions": [
+        {{
+            "questionNumber": 1,
+            "questionText": "Question with specific scenario and constitutional reference",
+            "category": "Category name",
+            "difficulty": "Easy/Medium/Hard",
+            "options": [
+                {{"letter": "A", "text": "Option A"}},
+                {{"letter": "B", "text": "Option B"}},
+                {{"letter": "C", "text": "Option C"}},
+                {{"letter": "D", "text": "Option D"}}
+            ],
+            "correctAnswer": "A",
+            "explanation": "Detailed explanation with constitutional reference",
+            "sourceReference": "Article X, Section Y of the Constitution of Kenya 2010"
+        }}
+    ]
+}}

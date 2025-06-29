@@ -1,0 +1,85 @@
+quiz:
+  # Search strategies for different days (rotated based on date)
+  daily-search-strategies:
+    - name: "Constitutional Rights and Freedoms"
+      queries:
+        - "fundamental rights bill of rights"
+        - "freedom of expression assembly"
+        - "right to life liberty security"
+        - "equality non-discrimination"
+        - "property rights protection"
+    
+    - name: "Government Structure and Powers"
+      queries:
+        - "executive president cabinet ministers"
+        - "parliament national assembly senate procedures"
+        - "judiciary court system magistrates"
+        - "separation of powers checks balances"
+        - "independent commissions functions"
+    
+    - name: "Electoral Democracy"
+      queries:
+        - "elections voting procedures registration"
+        - "political parties formation regulation"
+        - "electoral boundaries delimitation"
+        - "election disputes resolution tribunals"
+        - "campaign financing disclosure"
+    
+    - name: "Public Finance Management"
+      queries:
+        - "national budget preparation approval"
+        - "taxation revenue collection"
+        - "public debt borrowing limits"
+        - "county revenue sharing formula"
+        - "audit accountability transparency"
+    
+    - name: "Legal System and Justice"
+      queries:
+        - "court procedures jurisdiction hierarchy"
+        - "legal representation access justice"
+        - "criminal justice system procedures"
+        - "civil procedures dispute resolution"
+        - "legal aid services provision"
+    
+    - name: "Devolution and County Government"
+      queries:
+        - "county governments devolution"
+        - "county assembly functions"
+        - "governor powers responsibilities"
+        - "inter-governmental relations"
+        - "public participation citizen engagement"
+    
+    - name: "Public Service and Ethics"
+      queries:
+        - "public service commission functions"
+        - "ethics integrity public officers"
+        - "recruitment promotion procedures"
+        - "disciplinary procedures misconduct"
+        - "performance management evaluation"
+
+  # Constitutional chapters for targeted searches
+  constitutional-chapters:
+    - "sovereignty people chapter 1"
+    - "republic chapter 2"
+    - "citizenship chapter 3"
+    - "bill of rights chapter 4"
+    - "land environment chapter 5"
+    - "leadership integrity chapter 6"
+    - "representation people chapter 7"
+    - "legislature chapter 8"
+    - "executive chapter 9"
+    - "judiciary chapter 10"
+    - "devolved government chapter 11"
+    - "public finance chapter 12"
+    - "public service chapter 13"
+    - "national security chapter 14"
+    - "commissions independent offices chapter 15"
+    - "amendment constitution chapter 16"
+    - "general provisions chapter 17"
+    - "transitional provisions chapter 18"
+
+  # AI generation settings
+  generation:
+    max-context-documents: 15
+    similarity-threshold: 0.6
+    default-question-count: 10
