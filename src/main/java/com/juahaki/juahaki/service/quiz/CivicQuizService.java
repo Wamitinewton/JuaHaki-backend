@@ -37,11 +37,9 @@ public class CivicQuizService implements ICivicQuizService {
     private final UserAnswerRepository userAnswerRepository;
     private final UserRepository userRepository;
     private final JwtHelperService jwtHelperService;
-    private final RedisTemplate<String, Object> redisTemplate;
     private final IQuizRedisService quizRedisService;
 
     private static final long SESSION_TIMEOUT_MINUTES = 30;
-    private static final int MAX_QUESTIONS_PER_QUIZ = 10;
 
 
     @Override
