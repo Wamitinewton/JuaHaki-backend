@@ -40,43 +40,7 @@ public class CivicQuizAdminController {
         }
     }
 
-    @PostMapping("/regenerate")
-    public ResponseEntity<ApiResponse> regenerateQuiz(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @RequestParam String reason) {
-
-        log.info("Admin regenerating quiz for date: {}, reason: {}", date, reason);
-
-        try {
-            var quiz = civicQuizAIService.regenerateQuiz(date, reason);
-            return ResponseEntity.ok(new ApiResponse("Quiz regenerated successfully",
-                    Map.of("quizId", quiz.getId(), "date", date, "reason", reason)));
-        } catch (Exception e) {
-            log.error("Failed to regenerate quiz: {}", e.getMessage(), e);
-            return ResponseEntity.badRequest().body(new ApiResponse("Failed to regenerate quiz: " + e.getMessage(), null));
-        }
-    }
-
-    @GetMapping("/topics/suggested")
-    public ResponseEntity<ApiResponse> getSuggestedTopics() {
-        log.info("Getting suggested quiz topics");
-
-        List<String> topics = civicQuizAIService.getSuggestedTopics();
-        return ResponseEntity.ok(new ApiResponse("Suggested topics retrieved successfully", topics));
-    }
-
-    @GetMapping("/quiz/{quizId}/quality-analysis")
-    public ResponseEntity<ApiResponse> analyzeQuizQuality(@PathVariable Long quizId) {
-        log.info("Analyzing quiz quality for quiz ID: {}", quizId);
-
-        try {
-            var analysis = civicQuizAIService.analyzeQuizQuality(quizId);
-            return ResponseEntity.ok(new ApiResponse("Quiz quality analysis completed", analysis));
-        } catch (Exception e) {
-            log.error("Failed to analyze quiz quality: {}", e.getMessage(), e);
-            return ResponseEntity.badRequest().body(new ApiResponse("Failed to analyze quiz: " + e.getMessage(), null));
-        }
-    }
+ 
 
     @PostMapping("/admin/maintenance/cleanup-expired")
     public ResponseEntity<ApiResponse> cleanupExpiredSessions() {

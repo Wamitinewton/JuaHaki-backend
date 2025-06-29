@@ -16,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -121,7 +120,7 @@ public class CivicQuizService implements ICivicQuizService {
             quizRedisService.storeCivicQuizSession(sessionId, sessionData,
                     SESSION_TIMEOUT_MINUTES, TimeUnit.MINUTES);
 
-            // Get first question (cached)
+            // Get first question 
             CivicQuestion firstQuestion = getQuestionByNumber(todaysQuiz, 1);
 
             CivicQuestionResponse questionResponse = buildQuestionResponseForUser(firstQuestion);
@@ -168,7 +167,7 @@ public class CivicQuizService implements ICivicQuizService {
                 return SubmitCivicAnswerResponse.error("Quiz session is not active");
             }
 
-            // Get current question (cached)
+            // Get current question 
             CivicQuestion currentQuestion = getQuestionByNumber(attempt.getDailyQuiz(), sessionData.getCurrentQuestionNumber());
 
             // Check if already answered
@@ -371,7 +370,6 @@ public class CivicQuizService implements ICivicQuizService {
         DailyQuiz quiz = quizOptional.get();
         Long userId = jwtHelperService.getCurrentUserIdFromRequest(request);
 
-        // Get top performers
         List<UserQuizAttempt> topAttempts = userQuizAttemptRepository
                 .findLeaderboardByQuiz(quiz).stream()
                 .limit(10)
@@ -421,11 +419,9 @@ public class CivicQuizService implements ICivicQuizService {
                 attempt.setStatus(QuizStatus.EXPIRED);
                 userQuizAttemptRepository.save(attempt);
 
-                // Remove from redis if exists
                 quizRedisService.removeSession(attempt.getSessionId());
             }
 
-            // Clear cache for expired sessions
             if (!expiredSessions.isEmpty()) {
                 log.info("Cleaned up {} expired quiz sessions", expiredSessions.size());
             }
