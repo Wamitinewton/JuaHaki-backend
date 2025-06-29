@@ -21,6 +21,8 @@ import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -113,6 +115,7 @@ public class CivicQuizAIService {
     private static final List<String> DIFFICULTY_LEVELS = Arrays.asList("Easy", "Medium", "Hard");
 
     @Transactional
+    @CacheEvict(value = {"dailyQuiz", "quizInfo", "generatedQuiz", "quizQuestions"}, allEntries = true)
     public DailyQuiz generateDailyQuiz(LocalDate quizDate, int questionCount) {
         log.info("Generating daily quiz for date: {} with {} questions", quizDate, questionCount);
 
@@ -144,6 +147,7 @@ public class CivicQuizAIService {
     }
 
     @Transactional
+    @CacheEvict(value = {"dailyQuiz", "quizInfo", "generatedQuiz", "quizQuestions", "leaderboard", "quizStats"}, allEntries = true)
     public DailyQuiz regenerateQuiz(LocalDate quizDate, String reason) {
         log.info("Regenerating quiz for date: {}, reason: {}", quizDate, reason);
 
@@ -155,6 +159,7 @@ public class CivicQuizAIService {
         return generateDailyQuiz(quizDate, 10);
     }
 
+    @Cacheable(value = "quizAIContext", key = "'suggested_topics'")
     public List<String> getSuggestedTopics() {
         log.debug("Getting suggested civic topics");
 
@@ -179,6 +184,7 @@ public class CivicQuizAIService {
         }
     }
 
+    @Cacheable(value = "quizQuality", key = "#quizId")
     public QuizQualityAnalysis analyzeQuizQuality(Long quizId) {
         log.debug("Analyzing quiz quality for quiz ID: {}", quizId);
 
@@ -200,6 +206,7 @@ public class CivicQuizAIService {
                 .build();
     }
 
+    @Cacheable(value = "quizAIContext", key = "'context_' + #searchQueries.hashCode()")
     private String getRelevantContext() {
         try {
             List<String> searchQueries = Arrays.asList(
@@ -565,4 +572,4 @@ public class CivicQuizAIService {
         private double qualityScore;
         private List<String> recommendations;
     }
-}
+}   

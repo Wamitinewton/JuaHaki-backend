@@ -31,7 +31,6 @@ public class PdfDocumentProcessingService {
 
     private final VectorStore vectorStore;
     private final FirebaseStorageService firebaseStorageService;
-    private final TokenTextSplitter textSplitter;
 
     @Value("${app.document.processing.chunk-size:1000}")
     private int chunkSize;

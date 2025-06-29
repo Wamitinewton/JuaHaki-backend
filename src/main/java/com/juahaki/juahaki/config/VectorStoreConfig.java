@@ -11,9 +11,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
-import java.time.Duration;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Configuration
 @Slf4j
@@ -46,12 +43,6 @@ public class VectorStoreConfig {
             QdrantGrpcClient grpcClient = clientBuilder.build();
             QdrantClient client = new QdrantClient(grpcClient);
 
-            log.info("Testing Qdrant connecion....");
-            try {
-                List<String> collections = client.listCollectionsAsync(Duration.ofSeconds(30)).get(30, TimeUnit.SECONDS);
-            } catch (Exception e) {
-                log.warn("Could not List collections during startup");
-            }
             return client;
         } catch (Exception e) {
             log.error("Failed to initialize qdrant client");

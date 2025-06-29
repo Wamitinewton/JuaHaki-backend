@@ -76,7 +76,7 @@ public class RedisConfig {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        ObjectMapper objectMapper = createObjectMapper();
+        ObjectMapper objectMapper = createQuizObjectMapper();
         Jackson2JsonRedisSerializer<Object> jsonRedisSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, Object.class);
         StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
 
@@ -93,9 +93,9 @@ public class RedisConfig {
     @Bean
     @Primary
     public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
-        log.info("Configuring Redis Cache Manager");
+        log.info("Configuring Redis Cache Manager with Quiz-specific configurations");
 
-        ObjectMapper objectMapper = createObjectMapper();
+        ObjectMapper objectMapper = createQuizObjectMapper();
         GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 
         RedisCacheConfiguration defaultCacheConfig = RedisCacheConfiguration.defaultCacheConfig()
@@ -106,26 +106,53 @@ public class RedisConfig {
                 .entryTtl(Duration.ofHours(1))
                 .disableCachingNullValues();
 
-        // Define cache-specific configurations
+        // Define cache-specific configurations for quiz system
         Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
         
-        // Quiz cache - 24 hours (daily quiz)
-        cacheConfigurations.put("dailyQuiz", defaultCacheConfig.entryTtl(Duration.ofHours(24)));
+        // Daily Quiz cache - cache for 24 hours (until next day)
+        cacheConfigurations.put("dailyQuiz", defaultCacheConfig
+                .entryTtl(Duration.ofHours(24))
+                .prefixCacheNameWith("quiz:daily:"));
         
-        // Quiz info cache - 1 hour
-        cacheConfigurations.put("quizInfo", defaultCacheConfig.entryTtl(Duration.ofHours(1)));
+        // Quiz info cache - cache for 2 hours
+        cacheConfigurations.put("quizInfo", defaultCacheConfig
+                .entryTtl(Duration.ofHours(2))
+                .prefixCacheNameWith("quiz:info:"));
         
-        // Leaderboard cache - 30 minutes
-        cacheConfigurations.put("leaderboard", defaultCacheConfig.entryTtl(Duration.ofMinutes(30)));
+        // Generated quiz content - cache for 24 hours (same as daily quiz)
+        cacheConfigurations.put("generatedQuiz", defaultCacheConfig
+                .entryTtl(Duration.ofHours(24))
+                .prefixCacheNameWith("quiz:generated:"));
         
-        // Quiz statistics cache - 1 hour
-        cacheConfigurations.put("quizStats", defaultCacheConfig.entryTtl(Duration.ofHours(1)));
+        // Quiz questions cache - cache for 24 hours
+        cacheConfigurations.put("quizQuestions", defaultCacheConfig
+                .entryTtl(Duration.ofHours(24))
+                .prefixCacheNameWith("quiz:questions:"));
         
-        // Quiz questions cache - 24 hours
-        cacheConfigurations.put("quizQuestions", defaultCacheConfig.entryTtl(Duration.ofHours(24)));
+        // Leaderboard cache - cache for 30 minutes (frequently updated)
+        cacheConfigurations.put("leaderboard", defaultCacheConfig
+                .entryTtl(Duration.ofMinutes(30))
+                .prefixCacheNameWith("quiz:leaderboard:"));
         
-        // User quiz history cache - 30 minutes
-        cacheConfigurations.put("userQuizHistory", defaultCacheConfig.entryTtl(Duration.ofMinutes(30)));
+        // Quiz statistics cache - cache for 1 hour
+        cacheConfigurations.put("quizStats", defaultCacheConfig
+                .entryTtl(Duration.ofHours(1))
+                .prefixCacheNameWith("quiz:stats:"));
+        
+        // User quiz history cache - cache for 30 minutes
+        cacheConfigurations.put("userQuizHistory", defaultCacheConfig
+                .entryTtl(Duration.ofMinutes(30))
+                .prefixCacheNameWith("quiz:history:"));
+
+        // Quiz AI context cache - cache for 6 hours
+        cacheConfigurations.put("quizAIContext", defaultCacheConfig
+                .entryTtl(Duration.ofHours(6))
+                .prefixCacheNameWith("quiz:ai:context:"));
+
+        // Quiz quality analysis cache - cache for 12 hours
+        cacheConfigurations.put("quizQuality", defaultCacheConfig
+                .entryTtl(Duration.ofHours(12))
+                .prefixCacheNameWith("quiz:quality:"));
 
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(defaultCacheConfig)
@@ -133,12 +160,19 @@ public class RedisConfig {
                 .build();
     }
 
-    private ObjectMapper createObjectMapper() {
+    /**
+     * Creates ObjectMapper specifically configured for quiz data serialization
+     */
+    private ObjectMapper createQuizObjectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
+        
+        // Register JavaTimeModule for LocalDate, LocalDateTime serialization
         objectMapper.registerModule(new JavaTimeModule());
+        
+        // Include non-null values only
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
-        // Enable type information for proper deserialization
+        // Enable type information for proper deserialization of complex objects
         objectMapper.activateDefaultTyping(
                 LaissezFaireSubTypeValidator.instance,
                 ObjectMapper.DefaultTyping.NON_FINAL,

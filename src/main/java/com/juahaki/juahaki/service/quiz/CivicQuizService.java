@@ -14,6 +14,8 @@ import com.juahaki.juahaki.util.jwt.JwtHelperService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -41,14 +43,15 @@ public class CivicQuizService implements ICivicQuizService {
 
     private static final long SESSION_TIMEOUT_MINUTES = 30;
 
-
     @Override
+    @Cacheable(value = "quizInfo", key = "'today_' + #request.getHeader('Authorization')")
     public CivicQuizInfoResponse getTodaysInfo(HttpServletRequest request) {
         log.debug("Getting today's quiz info");
         return getQuizInfo(LocalDate.now(), request);
     }
 
     @Override
+    @Cacheable(value = "quizInfo", key = "#date + '_' + #request.getHeader('Authorization')")
     public CivicQuizInfoResponse getQuizInfo(LocalDate date, HttpServletRequest request) {
         log.debug("Getting quiz info for date: {}", date);
 
@@ -85,6 +88,7 @@ public class CivicQuizService implements ICivicQuizService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"quizInfo", "leaderboard", "quizStats"}, key = "#request.getHeader('Authorization')")
     public StartCivicQuizResponse startQuiz(HttpServletRequest request) {
         log.debug("Starting civic quiz");
 
@@ -117,10 +121,8 @@ public class CivicQuizService implements ICivicQuizService {
             quizRedisService.storeCivicQuizSession(sessionId, sessionData,
                     SESSION_TIMEOUT_MINUTES, TimeUnit.MINUTES);
 
-            // Get first question
-            CivicQuestion firstQuestion = civicQuestionRepository
-                    .findByQuizAndNumber(todaysQuiz, 1)
-                    .orElseThrow(() -> new CustomException("Quiz questions not found"));
+            // Get first question (cached)
+            CivicQuestion firstQuestion = getQuestionByNumber(todaysQuiz, 1);
 
             CivicQuestionResponse questionResponse = buildQuestionResponseForUser(firstQuestion);
 
@@ -137,6 +139,7 @@ public class CivicQuizService implements ICivicQuizService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"leaderboard", "quizStats", "userQuizHistory"}, allEntries = true)
     public SubmitCivicAnswerResponse submitAnswer(SubmitCivicAnswerRequest request,
                                                   HttpServletRequest httpRequest) {
         log.debug("Submitting answer for session: {}", request.getSessionId());
@@ -165,10 +168,8 @@ public class CivicQuizService implements ICivicQuizService {
                 return SubmitCivicAnswerResponse.error("Quiz session is not active");
             }
 
-            // Get current question
-            CivicQuestion currentQuestion = civicQuestionRepository
-                    .findByQuizAndNumber(attempt.getDailyQuiz(), sessionData.getCurrentQuestionNumber())
-                    .orElseThrow(() -> new CustomException("Current question not found"));
+            // Get current question (cached)
+            CivicQuestion currentQuestion = getQuestionByNumber(attempt.getDailyQuiz(), sessionData.getCurrentQuestionNumber());
 
             // Check if already answered
             if (userAnswerRepository.existsByAttemptAndQuestion(attempt, currentQuestion)) {
@@ -204,9 +205,7 @@ public class CivicQuizService implements ICivicQuizService {
                 quizRedisService.updateCivicQuizSession(request.getSessionId(), sessionData,
                         SESSION_TIMEOUT_MINUTES, TimeUnit.MINUTES);
 
-                CivicQuestion next = civicQuestionRepository
-                        .findByQuizAndNumber(attempt.getDailyQuiz(), sessionData.getCurrentQuestionNumber())
-                        .orElse(null);
+                CivicQuestion next = getQuestionByNumber(attempt.getDailyQuiz(), sessionData.getCurrentQuestionNumber());
 
                 if (next != null) {
                     nextQuestion = buildQuestionResponseForUser(next);
@@ -270,9 +269,7 @@ public class CivicQuizService implements ICivicQuizService {
                 return CivicQuizSessionResponse.error("Session has expired");
             }
 
-            CivicQuestion currentQuestion = civicQuestionRepository
-                    .findByQuizAndNumber(attempt.getDailyQuiz(), sessionData.getCurrentQuestionNumber())
-                    .orElse(null);
+            CivicQuestion currentQuestion = getQuestionByNumber(attempt.getDailyQuiz(), sessionData.getCurrentQuestionNumber());
 
             CivicQuestionResponse questionResponse = currentQuestion != null ?
                     buildQuestionResponseForUser(currentQuestion) : null;
@@ -319,6 +316,7 @@ public class CivicQuizService implements ICivicQuizService {
     }
 
     @Override
+    @Cacheable(value = "userQuizHistory", key = "'results_' + #sessionId + '_' + #request.getHeader('Authorization')")
     public UserQuizSummary getQuizResults(String sessionId, HttpServletRequest request) {
 
         Optional<UserQuizAttempt> attemptOptional = userQuizAttemptRepository.findBySessionId(sessionId);
@@ -342,6 +340,7 @@ public class CivicQuizService implements ICivicQuizService {
     }
 
     @Override
+    @Cacheable(value = "userQuizHistory", key = "#request.getHeader('Authorization')")
     public List<UserQuizSummary> getUserQuizHistory(HttpServletRequest request) {
         Long userId = jwtHelperService.getCurrentUserIdFromRequest(request);
         User user = userRepository.findById(userId)
@@ -356,11 +355,13 @@ public class CivicQuizService implements ICivicQuizService {
     }
 
     @Override
+    @Cacheable(value = "leaderboard", key = "'today_' + #request.getHeader('Authorization')")
     public QuizLeaderboardResponse getTodaysLeaderboard(HttpServletRequest request) {
         return getQuizLeaderboardResponse(LocalDate.now(), request);
     }
 
     @Override
+    @Cacheable(value = "leaderboard", key = "#date + '_' + #request.getHeader('Authorization')")
     public QuizLeaderboardResponse getQuizLeaderboardResponse(LocalDate date, HttpServletRequest request) {
         Optional<DailyQuiz> quizOptional = dailyQuizRepository.findByQuizDate(date);
         if (quizOptional.isEmpty()) {
@@ -376,11 +377,11 @@ public class CivicQuizService implements ICivicQuizService {
                 .limit(10)
                 .toList();
 
-        List<LeaderboardEntry> topPerfomers = new ArrayList<>();
+        List<LeaderboardEntry> topPerformers = new ArrayList<>();
         for (int i = 0; i < topAttempts.size(); i++) {
             UserQuizAttempt attempt = topAttempts.get(i);
             LeaderboardEntry entry = buildLeaderboardEntry(attempt, i + 1, userId);
-            topPerfomers.add(entry);
+            topPerformers.add(entry);
         }
 
         LeaderboardEntry userRanking = null;
@@ -393,14 +394,14 @@ public class CivicQuizService implements ICivicQuizService {
             userRanking = buildLeaderboardEntry(userQuizAttempt.get(), userRank, userId);
         }
 
-        QuizStatistics statistics = buildQuizStatistics(quiz);
+        QuizStatistics statistics = getQuizStatistics(date);
         long totalParticipants = userQuizAttemptRepository.countCompletedAttemptsByQuiz(quiz);
 
         return QuizLeaderboardResponse.builder()
                 .quizDate(date)
                 .quizTitle(quiz.getTitle())
                 .totalParticipants((int) totalParticipants)
-                .topPerformers(topPerfomers)
+                .topPerformers(topPerformers)
                 .userRanking(userRanking)
                 .statistics(statistics)
                 .build();
@@ -423,14 +424,20 @@ public class CivicQuizService implements ICivicQuizService {
                 // Remove from redis if exists
                 quizRedisService.removeSession(attempt.getSessionId());
             }
+
+            // Clear cache for expired sessions
+            if (!expiredSessions.isEmpty()) {
+                log.info("Cleaned up {} expired quiz sessions", expiredSessions.size());
+            }
         } catch (Exception e) {
-            log.error("Error during quiz session cleanup");
+            log.error("Error during quiz session cleanup: {}", e.getMessage());
         }
     }
 
     @Override
+    @Cacheable(value = "quizStats", key = "#date")
     public QuizStatistics getQuizStatistics(LocalDate date) {
-        log.debug("Getting quiz statistics for data: {}", date);
+        log.debug("Getting quiz statistics for date: {}", date);
 
         Optional<DailyQuiz> quizOptional = dailyQuizRepository.findByQuizDate(date);
         if (quizOptional.isEmpty()) {
@@ -438,6 +445,13 @@ public class CivicQuizService implements ICivicQuizService {
         }
 
         return buildQuizStatistics(quizOptional.get());
+    }
+
+    @Cacheable(value = "quizQuestions", key = "#quiz.id + '_' + #questionNumber")
+    private CivicQuestion getQuestionByNumber(DailyQuiz quiz, int questionNumber) {
+        return civicQuestionRepository
+                .findByQuizAndNumber(quiz, questionNumber)
+                .orElseThrow(() -> new CustomException("Question " + questionNumber + " not found"));
     }
 
     private String generateSessionId() {
@@ -483,7 +497,7 @@ public class CivicQuizService implements ICivicQuizService {
                 .map(this::buildQuestionResultSummary)
                 .collect(Collectors.toList());
 
-        CategoryPerformance categoryPerformance = buildCategoryPerfomance(answers);
+        CategoryPerformance categoryPerformance = buildCategoryPerformance(answers);
         String durationFormatted = attempt.getDurationSeconds() != null ?
                 formatDuration(Duration.ofSeconds(attempt.getDurationSeconds())) : "N/A";
 
@@ -531,7 +545,7 @@ public class CivicQuizService implements ICivicQuizService {
                 .orElse("");
     }
 
-    private CategoryPerformance buildCategoryPerfomance(List<UserAnswer> answers) {
+    private CategoryPerformance buildCategoryPerformance(List<UserAnswer> answers) {
         Map<String, List<UserAnswer>> answersByCategory = answers.stream()
                 .collect(Collectors.groupingBy(answer -> answer.getQuestion().getCategory()));
 
@@ -592,7 +606,7 @@ public class CivicQuizService implements ICivicQuizService {
 
     private String generateCategoryFeedback(String category, double percentage) {
         if (percentage >= 80) {
-            return "Outstanding knowldge in " + category + "! Keep up the excellent work";
+            return "Outstanding knowledge in " + category + "! Keep up the excellent work";
         } else if (percentage >= 70) {
             return "Good understanding of " + category + ". A few more correct answers would make it excellent.";
         } else if (percentage >= 60) {
@@ -649,7 +663,7 @@ public class CivicQuizService implements ICivicQuizService {
                 .completionRate(completionRate)
                 .mostDifficultQuestion("Analysis pending")
                 .easiestQuestion("Analysis pending")
-                .popularCategory("General Knowldge")
+                .popularCategory("General Knowledge")
                 .build();
     }
 
