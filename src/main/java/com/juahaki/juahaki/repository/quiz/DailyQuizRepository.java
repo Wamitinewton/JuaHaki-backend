@@ -21,4 +21,6 @@ public interface DailyQuizRepository extends JpaRepository<DailyQuiz, Long> {
     @Query("SELECT dq FROM DailyQuiz dq WHERE dq.quizDate = CURRENT_DATE AND dq.isActive = true")
     Optional<DailyQuiz> findTodaysActiveQuiz();
 
+    boolean existsByQuizDate(LocalDate quizDate);
+
 }

@@ -175,7 +175,7 @@ public class CivicQuizAIService {
 
         } catch (Exception e) {
             log.warn("Failed to get suggested topics from vector store: {}", e.getMessage());
-            return CIVIC_CATEGORIES; // Fallback to default categories
+            return CIVIC_CATEGORIES;
         }
     }
 
@@ -263,7 +263,6 @@ public class CivicQuizAIService {
         }
     }
 
-    // Fixed method using PromptTemplate properly
     private Prompt createPromptTemplate(String context, LocalDate quizDate, int questionCount) {
         String difficultyDistribution = String.format(
                 "%d Easy, %d Medium, %d Hard",
@@ -364,7 +363,7 @@ public class CivicQuizAIService {
                 .description(response.getDescription())
                 .totalQuestions(response.getQuestions().size())
                 .isActive(true)
-                .expiresAt(quizDate.plusDays(1).atStartOfDay()) // Expires at start of next day
+                .expiresAt(quizDate.plusDays(1).atStartOfDay())
                 .build();
     }
 
@@ -401,7 +400,6 @@ public class CivicQuizAIService {
     }
 
     private List<String> extractTopicsFromDocument(Document document) {
-        // Simple topic extraction - could be enhanced with NLP
         String content = document.getText().toLowerCase();
         List<String> topics = new ArrayList<>();
 

@@ -21,7 +21,6 @@ public interface UserQuizAttemptRepository extends JpaRepository<UserQuizAttempt
 
     Optional<UserQuizAttempt> findBySessionId(String sessionId);
 
-
     @Query("SELECT uqa FROM UserQuizAttempt uqa WHERE uqa.user = :user AND uqa.dailyQuiz.quizDate = :date")
     Optional<UserQuizAttempt> findByUserAndQuizDate(@Param("user") User user, @Param("date") LocalDate date);
 
