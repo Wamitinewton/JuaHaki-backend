@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,8 +40,10 @@ public class CivicQuizService implements ICivicQuizService {
     private final UserRepository userRepository;
     private final JwtHelperService jwtHelperService;
     private final IQuizRedisService quizRedisService;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     private static final long SESSION_TIMEOUT_MINUTES = 30;
+    private static final String QUIZ_QUESTIONS_PREFIX = "quiz:questions:";
 
     @Override
     @Cacheable(value = "quizInfo", key = "'today_' + #request.getHeader('Authorization')")
@@ -62,6 +65,9 @@ public class CivicQuizService implements ICivicQuizService {
         }
 
         DailyQuiz quiz = quizOptional.get();
+
+        cacheQuizQuestionsInRedis(quiz);
+
         Optional<UserQuizAttempt> userAttempt = userQuizAttemptRepository.findByUserAndQuizDate(
                 userRepository.findById(userId).orElseThrow(), date);
 
@@ -102,26 +108,27 @@ public class CivicQuizService implements ICivicQuizService {
             throw new CustomException("Today's quiz has expired");
         }
 
-        // Check if user already has an active session
         if (userQuizAttemptRepository.existsByUserAndDailyQuiz(user, todaysQuiz)) {
             throw new CustomException("You have already attempted today's quiz");
         }
 
         try {
-            // Create new quiz attempt
+            cacheQuizQuestionsInRedis(todaysQuiz);
+
             String sessionId = generateSessionId();
             UserQuizAttempt attempt = createQuizAttempt(user, todaysQuiz, sessionId);
             UserQuizAttempt savedAttempt = userQuizAttemptRepository.save(attempt);
 
-            // Store session in Redis
             CivicQuizSessionData sessionData = new CivicQuizSessionData(
                     userId, todaysQuiz.getId(), 1, savedAttempt.getId());
 
             quizRedisService.storeCivicQuizSession(sessionId, sessionData,
                     SESSION_TIMEOUT_MINUTES, TimeUnit.MINUTES);
 
-            // Get first question 
-            CivicQuestion firstQuestion = getQuestionByNumber(todaysQuiz, 1);
+            CivicQuestion firstQuestion = getQuestionFromRedis(todaysQuiz.getId(), 1);
+            if (firstQuestion == null) {
+                throw new CustomException("Questions not available. Please try again.");
+            }
 
             CivicQuestionResponse questionResponse = buildQuestionResponseForUser(firstQuestion);
 
@@ -145,7 +152,6 @@ public class CivicQuizService implements ICivicQuizService {
 
         Long userId = jwtHelperService.getCurrentUserIdFromRequest(httpRequest);
 
-        // Get session data from Redis
         Optional<CivicQuizSessionData> sessionOptional =
                 quizRedisService.getCivicQuizSession(request.getSessionId());
 
@@ -167,8 +173,12 @@ public class CivicQuizService implements ICivicQuizService {
                 return SubmitCivicAnswerResponse.error("Quiz session is not active");
             }
 
-            // Get current question 
-            CivicQuestion currentQuestion = getQuestionByNumber(attempt.getDailyQuiz(), sessionData.getCurrentQuestionNumber());
+            CivicQuestion currentQuestion = getQuestionFromRedis(attempt.getDailyQuiz().getId(),
+                    sessionData.getCurrentQuestionNumber());
+
+            if (currentQuestion == null) {
+                return SubmitCivicAnswerResponse.error("Question not found");
+            }
 
             // Check if already answered
             if (userAnswerRepository.existsByAttemptAndQuestion(attempt, currentQuestion)) {
@@ -188,7 +198,6 @@ public class CivicQuizService implements ICivicQuizService {
                     .build();
             userAnswerRepository.save(userAnswer);
 
-            // Update attempt statistics
             attempt.setQuestionsAnswered(attempt.getQuestionsAnswered() + 1);
             if (isCorrect) {
                 attempt.setCorrectAnswers(attempt.getCorrectAnswers() + 1);
@@ -204,7 +213,9 @@ public class CivicQuizService implements ICivicQuizService {
                 quizRedisService.updateCivicQuizSession(request.getSessionId(), sessionData,
                         SESSION_TIMEOUT_MINUTES, TimeUnit.MINUTES);
 
-                CivicQuestion next = getQuestionByNumber(attempt.getDailyQuiz(), sessionData.getCurrentQuestionNumber());
+                // Get next question from Redis
+                CivicQuestion next = getQuestionFromRedis(attempt.getDailyQuiz().getId(),
+                        sessionData.getCurrentQuestionNumber());
 
                 if (next != null) {
                     nextQuestion = buildQuestionResponseForUser(next);
@@ -268,7 +279,9 @@ public class CivicQuizService implements ICivicQuizService {
                 return CivicQuizSessionResponse.error("Session has expired");
             }
 
-            CivicQuestion currentQuestion = getQuestionByNumber(attempt.getDailyQuiz(), sessionData.getCurrentQuestionNumber());
+            // Get current question from Redis
+            CivicQuestion currentQuestion = getQuestionFromRedis(attempt.getDailyQuiz().getId(),
+                    sessionData.getCurrentQuestionNumber());
 
             CivicQuestionResponse questionResponse = currentQuestion != null ?
                     buildQuestionResponseForUser(currentQuestion) : null;
@@ -285,6 +298,120 @@ public class CivicQuizService implements ICivicQuizService {
             log.error("Error getting session status for {}: {}", sessionId, e.getMessage(), e);
             return CivicQuizSessionResponse.error("Failed to get session status");
         }
+    }
+
+    /**
+     * Cache all quiz questions in Redis when quiz is first accessed
+     */
+    private void cacheQuizQuestionsInRedis(DailyQuiz quiz) {
+        String questionsKey = QUIZ_QUESTIONS_PREFIX + quiz.getId();
+
+        try {
+            // Check if questions are already cached
+            if (redisTemplate.hasKey(questionsKey)) {
+                log.debug("Questions for quiz {} already cached in Redis", quiz.getId());
+                return;
+            }
+
+            // Load questions from database
+            List<CivicQuestion> questions = civicQuestionRepository.findByDailyQuizOrderByQuestionNumber(quiz);
+
+            if (questions.isEmpty()) {
+                log.warn("No questions found for quiz {}", quiz.getId());
+                return;
+            }
+
+            Map<String, Object> questionMap = new HashMap<>();
+            for (CivicQuestion question : questions) {
+                RedisQuestionDto redisDto = convertToRedisDto(question);
+                questionMap.put(String.valueOf(question.getQuestionNumber()), redisDto);
+            }
+
+            redisTemplate.opsForHash().putAll(questionsKey, questionMap);
+
+
+            Duration timeUntilExpiry = Duration.between(LocalDateTime.now(), quiz.getExpiresAt());
+            if (!timeUntilExpiry.isNegative() && !timeUntilExpiry.isZero()) {
+                redisTemplate.expire(questionsKey, timeUntilExpiry);
+            }
+            log.info("Cached {} questions for quiz {} in Redis with expiry: {}",
+                    questions.size(), quiz.getId(), quiz.getExpiresAt());
+
+        } catch (Exception e) {
+            log.error("Failed to cache questions for quiz {} in Redis: {}", quiz.getId(), e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Get a specific question from Redis cache
+     */
+    private CivicQuestion getQuestionFromRedis(Long quizId, int questionNumber) {
+        String questionsKey = QUIZ_QUESTIONS_PREFIX + quizId;
+
+        try {
+            Object questionObj = redisTemplate.opsForHash().get(questionsKey, String.valueOf(questionNumber));
+
+            if (questionObj instanceof RedisQuestionDto) {
+                log.debug("Retrieved question {} for quiz {} from Redis", questionNumber, quizId);
+                return convertFromRedisDto((RedisQuestionDto) questionObj);
+            }
+
+            log.warn("Question {} not found in Redis for quiz {}", questionNumber, quizId);
+            return null;
+
+        } catch (Exception e) {
+            log.error("Failed to get question {} from Redis for quiz {}: {}",
+                    questionNumber, quizId, e.getMessage(), e);
+            return null;
+        }
+    }
+
+
+    private RedisQuestionDto convertToRedisDto(CivicQuestion question) {
+        List<RedisQuestionDto.RedisOptionDto> optionDtos = question.getOptions().stream()
+                .map(option -> RedisQuestionDto.RedisOptionDto.builder()
+                        .optionLetter(option.getOptionLetter())
+                        .optionText(option.getOptionText())
+                        .build())
+                .collect(Collectors.toList());
+
+        return RedisQuestionDto.builder()
+                .questionId(question.getId())
+                .questionNumber(question.getQuestionNumber())
+                .questionText(question.getQuestionText())
+                .explanation(question.getExplanation())
+                .category(question.getCategory())
+                .difficulty(question.getDifficulty())
+                .correctAnswer(question.getCorrectAnswer())
+                .sourceReference(question.getSourceReference())
+                .options(optionDtos)
+                .build();
+    }
+
+
+    private CivicQuestion convertFromRedisDto(RedisQuestionDto dto) {
+        List<QuestionOption> options = dto.getOptions().stream()
+                .map(optionDto -> QuestionOption.builder()
+                        .optionLetter(optionDto.getOptionLetter())
+                        .optionText(optionDto.getOptionText())
+                        .build())
+                .collect(Collectors.toList());
+
+        CivicQuestion question = CivicQuestion.builder()
+                .id(dto.getQuestionId())
+                .questionNumber(dto.getQuestionNumber())
+                .questionText(dto.getQuestionText())
+                .explanation(dto.getExplanation())
+                .category(dto.getCategory())
+                .difficulty(dto.getDifficulty())
+                .correctAnswer(dto.getCorrectAnswer())
+                .sourceReference(dto.getSourceReference())
+                .options(options)
+                .build();
+
+        options.forEach(option -> option.setQuestion(question));
+
+        return question;
     }
 
     @Override
@@ -441,13 +568,6 @@ public class CivicQuizService implements ICivicQuizService {
         }
 
         return buildQuizStatistics(quizOptional.get());
-    }
-
-    @Cacheable(value = "quizQuestions", key = "#quiz.id + '_' + #questionNumber")
-    private CivicQuestion getQuestionByNumber(DailyQuiz quiz, int questionNumber) {
-        return civicQuestionRepository
-                .findByQuizAndNumber(quiz, questionNumber)
-                .orElseThrow(() -> new CustomException("Question " + questionNumber + " not found"));
     }
 
     private String generateSessionId() {

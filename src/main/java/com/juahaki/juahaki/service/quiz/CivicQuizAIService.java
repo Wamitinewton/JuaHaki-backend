@@ -3,6 +3,7 @@ package com.juahaki.juahaki.service.quiz;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.juahaki.juahaki.config.QuizConfigurationProperties;
+import com.juahaki.juahaki.dto.quiz.civic.RedisQuestionDto;
 import com.juahaki.juahaki.model.quiz.CivicQuestion;
 import com.juahaki.juahaki.model.quiz.DailyQuiz;
 import com.juahaki.juahaki.model.quiz.QuestionOption;
@@ -20,10 +21,13 @@ import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -39,6 +43,9 @@ public class CivicQuizAIService {
     private final ObjectMapper objectMapper;
     private final QuizConfigurationProperties quizConfig;
     private final PromptTemplateService promptTemplateService;
+    private final RedisTemplate<String, Object> redisTemplate;
+
+    private static final String QUIZ_QUESTIONS_PREFIX = "quiz:questions:";
 
     @Transactional
     @CacheEvict(value = { "dailyQuiz", "quizInfo", "generatedQuiz", "quizQuestions" }, allEntries = true)
@@ -49,7 +56,7 @@ public class CivicQuizAIService {
             long epochDay = quizDate.toEpochDay();
             QuizConfigurationProperties.SearchStrategy strategy = quizConfig.getSearchStrategyForDate(epochDay);
             List<String> targetChapters = selectTargetChapters(quizDate);
-            
+
             String context = getDiverseContext(strategy.getQueries(), targetChapters, quizDate);
             String focusAreas = strategy.getName();
 
@@ -62,7 +69,10 @@ public class CivicQuizAIService {
             DailyQuiz savedQuiz = dailyQuizRepository.save(dailyQuiz);
 
             List<CivicQuestion> questions = createQuestions(savedQuiz, quizResponse.getQuestions());
-            civicQuestionRepository.saveAll(questions);
+            List<CivicQuestion> savedQuestions = civicQuestionRepository.saveAll(questions);
+
+            // Cache questions in Redis immediately after saving to database
+            cacheQuestionsInRedis(savedQuiz, savedQuestions);
 
             log.info("Successfully generated diverse quiz using strategy '{}' with ID: {} for date: {}",
                     strategy.getName(), savedQuiz.getId(), quizDate);
@@ -74,7 +84,58 @@ public class CivicQuizAIService {
         }
     }
 
+    /**
+     * Cache quiz questions in Redis when they are first generated
+     */
+    private void cacheQuestionsInRedis(DailyQuiz quiz, List<CivicQuestion> questions) {
+        String questionsKey = QUIZ_QUESTIONS_PREFIX + quiz.getId();
+
+        try {
+            // Convert to Redis-friendly DTOs and store each question with its number as a hash field
+            Map<String, Object> questionMap = new HashMap<>();
+            for (CivicQuestion question : questions) {
+                RedisQuestionDto redisDto = convertToRedisDto(question);
+                questionMap.put(String.valueOf(question.getQuestionNumber()), redisDto);
+            }
+
+            redisTemplate.opsForHash().putAll(questionsKey, questionMap);
+
+            Duration timeUntilExpiry = Duration.between(LocalDateTime.now(), quiz.getExpiresAt());
+            if (!timeUntilExpiry.isNegative() && !timeUntilExpiry.isZero()) {
+                redisTemplate.expire(questionsKey, timeUntilExpiry);
+            }
+
+            log.info("Cached {} questions for new quiz {} in Redis with expiry: {}",
+                    questions.size(), quiz.getId(), quiz.getExpiresAt());
+
+        } catch (Exception e) {
+            log.error("Failed to cache questions for new quiz {} in Redis: {}", quiz.getId(), e.getMessage(), e);
+        }
+    }
+
+    private RedisQuestionDto convertToRedisDto(CivicQuestion question) {
+        List<RedisQuestionDto.RedisOptionDto> optionDtos = question.getOptions().stream()
+                .map(option -> RedisQuestionDto.RedisOptionDto.builder()
+                        .optionLetter(option.getOptionLetter())
+                        .optionText(option.getOptionText())
+                        .build())
+                .collect(Collectors.toList());
+
+        return RedisQuestionDto.builder()
+                .questionId(question.getId())
+                .questionNumber(question.getQuestionNumber())
+                .questionText(question.getQuestionText())
+                .explanation(question.getExplanation())
+                .category(question.getCategory())
+                .difficulty(question.getDifficulty())
+                .correctAnswer(question.getCorrectAnswer())
+                .sourceReference(question.getSourceReference())
+                .options(optionDtos)
+                .build();
+    }
+
     private List<String> selectTargetChapters(LocalDate quizDate) {
+        // Create a mutable copy of the constitutional chapters
         List<String> shuffledChapters = new ArrayList<>(quizConfig.getConstitutionalChapters());
         Collections.shuffle(shuffledChapters, new Random(quizDate.toEpochDay()));
         return shuffledChapters.subList(0, Math.min(4, shuffledChapters.size()));
@@ -83,7 +144,7 @@ public class CivicQuizAIService {
     private String getDiverseContext(List<String> searchQueries, List<String> targetChapters, LocalDate quizDate) {
         StringBuilder contextBuilder = new StringBuilder();
         Random dayRandom = new Random(quizDate.toEpochDay());
-        
+
         int maxDocs = quizConfig.getGeneration().getMaxContextDocuments();
         double threshold = quizConfig.getGeneration().getSimilarityThreshold();
 
@@ -96,9 +157,10 @@ public class CivicQuizAIService {
                     .build();
 
             List<Document> documents = vectorStore.similaritySearch(searchRequest);
-            Collections.shuffle(documents, dayRandom);
+            List<Document> mutableDocuments = new ArrayList<>(documents);
+            Collections.shuffle(mutableDocuments, dayRandom);
 
-            appendDocumentsToContext(contextBuilder, documents, "Search Query: " + query);
+            appendDocumentsToContext(contextBuilder, mutableDocuments, "Search Query: " + query);
         }
 
         // Search using constitutional chapters
@@ -136,7 +198,7 @@ public class CivicQuizAIService {
     }
 
     private QuizGenerationResponse generateQuizWithStrategy(String context, LocalDate quizDate,
-            int questionCount, String focusAreas, List<String> targetChapters) {
+                                                            int questionCount, String focusAreas, List<String> targetChapters) {
 
         try {
             String difficultyDistribution = calculateDifficultyDistribution(questionCount);
@@ -152,7 +214,7 @@ public class CivicQuizAIService {
             String promptText = promptTemplateService.buildPrompt(promptVariables);
             PromptTemplate promptTemplate = new PromptTemplate(promptText);
             Prompt prompt = promptTemplate.create(promptVariables);
-            
+
             String response = chatModel.call(prompt).getResult().getOutput().getText();
             log.debug("Received AI response for diverse quiz generation, length: {}", response.length());
 
