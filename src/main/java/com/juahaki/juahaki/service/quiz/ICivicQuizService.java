@@ -8,6 +8,11 @@ import java.util.List;
 
 public interface ICivicQuizService {
 
+    List<UserQuizMetadata> getUserQuizHistoryMetadata(HttpServletRequest request);
+
+
+    UserQuizSummary getQuizDetailsBySessionId(String sessionId, HttpServletRequest request);
+
     CivicQuizInfoResponse getTodaysInfo(HttpServletRequest request);
 
     CivicQuizInfoResponse getQuizInfo(LocalDate date, HttpServletRequest request);
@@ -23,8 +28,6 @@ public interface ICivicQuizService {
 
     // Results and statistics
     UserQuizSummary getQuizResults(String sessionId, HttpServletRequest request);
-
-    List<UserQuizSummary> getUserQuizHistory(HttpServletRequest request);
 
     QuizLeaderboardResponse getTodaysLeaderboard(HttpServletRequest request);
 

@@ -1,6 +1,7 @@
 package com.juahaki.juahaki.mapper;
 
 import com.juahaki.juahaki.dto.quiz.civic.*;
+import com.juahaki.juahaki.enums.QuizStatus;
 import com.juahaki.juahaki.model.quiz.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,28 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class QuizResponseMapper {
+
+    public UserQuizMetadata buildUserQuizMetadata(UserQuizAttempt attempt) {
+        String durationFormatted = attempt.getDurationSeconds() != null ?
+                formatDuration(Duration.ofSeconds(attempt.getDurationSeconds())) : "N/A";
+
+        return UserQuizMetadata.builder()
+                .sessionId(attempt.getSessionId())
+                .attemptId(attempt.getId())
+                .quizTitle(attempt.getDailyQuiz().getTitle())
+                .quizDate(attempt.getDailyQuiz().getQuizDate().atStartOfDay())
+                .totalQuestions(attempt.getTotalQuestions())
+                .questionsAnswered(attempt.getQuestionsAnswered())
+                .correctAnswers(attempt.getCorrectAnswers())
+                .score(attempt.getScore())
+                .performanceLevel(attempt.getPerformanceLevel())
+                .startedAt(attempt.getStartedAt())
+                .completedAt(attempt.getCompletedAt())
+                .durationFormatted(durationFormatted)
+                .completionMessage(generateCompletionMessage(attempt))
+                .isCompleted(attempt.getStatus() == QuizStatus.COMPLETED)
+                .build();
+    }
 
     public CivicQuestionResponse buildQuestionResponseForUser(CivicQuestion question) {
         List<QuestionOptionResponse> options = question.getOptions().stream()

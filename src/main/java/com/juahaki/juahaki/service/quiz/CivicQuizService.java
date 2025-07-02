@@ -336,8 +336,10 @@ public class CivicQuizService implements ICivicQuizService {
     }
 
     @Override
-    @Cacheable(value = "userQuizHistory", key = "#request.getHeader('Authorization')")
-    public List<UserQuizSummary> getUserQuizHistory(HttpServletRequest request) {
+    @Cacheable(value = "userQuizHistory", key = "'metadata_' + #request.getHeader('Authorization')")
+    public List<UserQuizMetadata> getUserQuizHistoryMetadata(HttpServletRequest request) {
+        log.debug("Getting user quiz history metadata");
+
         Long userId = jwtHelperService.getCurrentUserIdFromRequest(request);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException("User not found"));
@@ -346,12 +348,36 @@ public class CivicQuizService implements ICivicQuizService {
                 .findCompletedAttemptsByUser(user);
 
         return completedAttempts.stream()
-                .map(attempt -> {
-                    List<UserAnswer> answers = userAnswerRepository.findByAttemptOrderByQuestionNumber(attempt);
-                    return responseMapper.buildUserQuizSummary(attempt, answers);
-                })
+                .map(responseMapper::buildUserQuizMetadata)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    @Cacheable(value = "quizDetails", key = "'details_' + #sessionId + '_' + #request.getHeader('Authorization')")
+    public UserQuizSummary getQuizDetailsBySessionId(String sessionId, HttpServletRequest request) {
+        log.debug("Getting detailed quiz results for session: {}", sessionId);
+
+        Long userId = jwtHelperService.getCurrentUserIdFromRequest(request);
+
+        Optional<UserQuizAttempt> attemptOptional = userQuizAttemptRepository.findBySessionId(sessionId);
+        if (attemptOptional.isEmpty()) {
+            throw new CustomException("Quiz results not found");
+        }
+
+        UserQuizAttempt attempt = attemptOptional.get();
+
+        if (!attempt.getUser().getId().equals(userId)) {
+            throw new CustomException("Access denied to quiz results");
+        }
+
+        if (attempt.getStatus() != QuizStatus.COMPLETED) {
+            throw new CustomException("Quiz not completed yet");
+        }
+
+        List<UserAnswer> answers = userAnswerRepository.findByAttemptOrderByQuestionNumber(attempt);
+        return responseMapper.buildUserQuizSummary(attempt, answers);
+    }
+
 
     @Override
     @Cacheable(value = "leaderboard", key = "'today_' + #request.getHeader('Authorization')")

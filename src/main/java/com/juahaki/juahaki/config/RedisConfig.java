@@ -119,6 +119,10 @@ public class RedisConfig {
         cacheConfigurations.put("generatedQuiz", defaultCacheConfig
                 .entryTtl(Duration.ofHours(24))
                 .prefixCacheNameWith("quiz:generated:"));
+
+        cacheConfigurations.put("quizDetails", defaultCacheConfig
+                .entryTtl(Duration.ofHours(24))
+                .prefixCacheNameWith("quiz:details:"));
         
         cacheConfigurations.put("quizQuestions", defaultCacheConfig
                 .entryTtl(Duration.ofHours(24))
@@ -131,10 +135,10 @@ public class RedisConfig {
         cacheConfigurations.put("quizStats", defaultCacheConfig
                 .entryTtl(Duration.ofHours(1))
                 .prefixCacheNameWith("quiz:stats:"));
-        
+
         cacheConfigurations.put("userQuizHistory", defaultCacheConfig
                 .entryTtl(Duration.ofMinutes(30))
-                .prefixCacheNameWith("quiz:history:"));
+                .prefixCacheNameWith("quiz:history:metadata:"));
 
         cacheConfigurations.put("quizAIContext", defaultCacheConfig
                 .entryTtl(Duration.ofHours(6))

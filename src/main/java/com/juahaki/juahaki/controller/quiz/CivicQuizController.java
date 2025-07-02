@@ -109,12 +109,23 @@ public class CivicQuizController {
         return ResponseEntity.ok(new ApiResponse("Quiz results retrieved successfully", results));
     }
 
-    @GetMapping("/history")
-    public ResponseEntity<ApiResponse> getUserQuizHistory(HttpServletRequest request) {
-        log.info("Getting user quiz history");
+    @GetMapping("/history/metadata")
+    public ResponseEntity<ApiResponse> getUserQuizHistoryMetadata(HttpServletRequest request) {
+        log.info("Getting user quiz history metadata");
 
-        List<UserQuizSummary> history = civicQuizService.getUserQuizHistory(request);
-        return ResponseEntity.ok(new ApiResponse("Quiz history retrieved successfully", history));
+        List<UserQuizMetadata> historyMetadata = civicQuizService.getUserQuizHistoryMetadata(request);
+        return ResponseEntity.ok(new ApiResponse("Quiz history metadata retrieved successfully", historyMetadata));
+    }
+
+    @GetMapping("/history/details/{sessionId}")
+    public ResponseEntity<ApiResponse> getQuizDetailsBySessionId(
+            @PathVariable String sessionId,
+            HttpServletRequest request) {
+
+        log.info("Getting detailed quiz results for session: {}", sessionId);
+
+        UserQuizSummary quizDetails = civicQuizService.getQuizDetailsBySessionId(sessionId, request);
+        return ResponseEntity.ok(new ApiResponse("Quiz details retrieved successfully", quizDetails));
     }
 
     @GetMapping("/leaderboard/today")
