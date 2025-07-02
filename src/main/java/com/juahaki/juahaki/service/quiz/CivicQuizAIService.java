@@ -3,12 +3,12 @@ package com.juahaki.juahaki.service.quiz;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.juahaki.juahaki.config.QuizConfigurationProperties;
-import com.juahaki.juahaki.dto.quiz.civic.RedisQuestionDto;
+import com.juahaki.juahaki.mapper.QuizEntityMapper;
 import com.juahaki.juahaki.model.quiz.CivicQuestion;
 import com.juahaki.juahaki.model.quiz.DailyQuiz;
-import com.juahaki.juahaki.model.quiz.QuestionOption;
 import com.juahaki.juahaki.repository.quiz.CivicQuestionRepository;
 import com.juahaki.juahaki.repository.quiz.DailyQuizRepository;
+import com.juahaki.juahaki.util.quiz.QuizAIBuilder;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +29,6 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +44,8 @@ public class CivicQuizAIService {
     private final PromptTemplateService promptTemplateService;
     private final RedisTemplate<String, Object> redisTemplate;
 
+    private final QuizEntityMapper entityMapper;
+
     private static final String QUIZ_QUESTIONS_PREFIX = "quiz:questions:";
 
     @Transactional
@@ -55,23 +56,22 @@ public class CivicQuizAIService {
         try {
             long epochDay = quizDate.toEpochDay();
             QuizConfigurationProperties.SearchStrategy strategy = quizConfig.getSearchStrategyForDate(epochDay);
-            List<String> targetChapters = selectTargetChapters(quizDate);
+            List<String> targetChapters = QuizAIBuilder.selectTargetChapters(quizDate, quizConfig.getConstitutionalChapters());
 
-            String context = getDiverseContext(strategy.getQueries(), targetChapters, quizDate);
+            String context = buildDiverseContext(strategy.getQueries(), targetChapters, quizDate);
             String focusAreas = strategy.getName();
 
             QuizGenerationResponse quizResponse = generateQuizWithStrategy(
                     context, quizDate, questionCount, focusAreas, targetChapters);
 
-            validateQuizResponse(quizResponse, questionCount);
+            QuizAIBuilder.validateQuizResponse(quizResponse, questionCount, "quiz generation");
 
-            DailyQuiz dailyQuiz = createDailyQuiz(quizDate, quizResponse);
+            DailyQuiz dailyQuiz = entityMapper.createDailyQuiz(quizDate, quizResponse);
             DailyQuiz savedQuiz = dailyQuizRepository.save(dailyQuiz);
 
-            List<CivicQuestion> questions = createQuestions(savedQuiz, quizResponse.getQuestions());
+            List<CivicQuestion> questions = entityMapper.createQuestions(savedQuiz, quizResponse.getQuestions());
             List<CivicQuestion> savedQuestions = civicQuestionRepository.saveAll(questions);
 
-            // Cache questions in Redis immediately after saving to database
             cacheQuestionsInRedis(savedQuiz, savedQuestions);
 
             log.info("Successfully generated diverse quiz using strategy '{}' with ID: {} for date: {}",
@@ -84,6 +84,57 @@ public class CivicQuizAIService {
         }
     }
 
+
+    /**
+     * Build diverse context using AI builder utility
+     */
+    private String buildDiverseContext(List<String> searchQueries, List<String> targetChapters, LocalDate quizDate) {
+        int maxDocs = quizConfig.getGeneration().getMaxContextDocuments();
+        double threshold = quizConfig.getGeneration().getSimilarityThreshold();
+
+        // Create search function
+        QuizAIBuilder.ContextSearchFunction searchFunction = (query, limit, searchThreshold) -> {
+            SearchRequest searchRequest = SearchRequest.builder()
+                    .query(query)
+                    .topK(limit)
+                    .similarityThreshold(searchThreshold)
+                    .build();
+            return vectorStore.similaritySearch(searchRequest);
+        };
+
+        return QuizAIBuilder.buildDiverseContext(
+                searchQueries, targetChapters, quizDate, maxDocs, threshold, searchFunction);
+    }
+
+    /**
+     * Generate quiz using AI with strategic approach
+     */
+    private QuizGenerationResponse generateQuizWithStrategy(String context, LocalDate quizDate,
+                                                            int questionCount, String focusAreas,
+                                                            List<String> targetChapters) {
+        try {
+            Map<String, Object> promptVariables = QuizAIBuilder.buildPromptVariables(
+                    context, quizDate, questionCount, focusAreas, targetChapters);
+
+            String promptText = promptTemplateService.buildPrompt(promptVariables);
+            PromptTemplate promptTemplate = new PromptTemplate(promptText);
+            Prompt prompt = promptTemplate.create(promptVariables);
+
+            String response = chatModel.call(prompt).getResult().getOutput().getText();
+            log.debug("Received AI response for diverse quiz generation, length: {}", response.length());
+
+            String cleanedResponse = QuizAIBuilder.cleanJsonResponse(response);
+            return objectMapper.readValue(cleanedResponse, QuizGenerationResponse.class);
+
+        } catch (JsonProcessingException e) {
+            log.error("Failed to parse AI response as JSON: {}", e.getMessage());
+            throw new RuntimeException("Invalid quiz format generated by AI", e);
+        } catch (Exception e) {
+            log.error("Failed to generate diverse quiz with AI: {}", e.getMessage(), e);
+            throw new RuntimeException("AI quiz generation failed", e);
+        }
+    }
+
     /**
      * Cache quiz questions in Redis when they are first generated
      */
@@ -91,10 +142,9 @@ public class CivicQuizAIService {
         String questionsKey = QUIZ_QUESTIONS_PREFIX + quiz.getId();
 
         try {
-            // Convert to Redis-friendly DTOs and store each question with its number as a hash field
             Map<String, Object> questionMap = new HashMap<>();
             for (CivicQuestion question : questions) {
-                RedisQuestionDto redisDto = convertToRedisDto(question);
+                var redisDto = entityMapper.convertToRedisDto(question);
                 questionMap.put(String.valueOf(question.getQuestionNumber()), redisDto);
             }
 
@@ -111,202 +161,6 @@ public class CivicQuizAIService {
         } catch (Exception e) {
             log.error("Failed to cache questions for new quiz {} in Redis: {}", quiz.getId(), e.getMessage(), e);
         }
-    }
-
-    private RedisQuestionDto convertToRedisDto(CivicQuestion question) {
-        List<RedisQuestionDto.RedisOptionDto> optionDtos = question.getOptions().stream()
-                .map(option -> RedisQuestionDto.RedisOptionDto.builder()
-                        .optionLetter(option.getOptionLetter())
-                        .optionText(option.getOptionText())
-                        .build())
-                .collect(Collectors.toList());
-
-        return RedisQuestionDto.builder()
-                .questionId(question.getId())
-                .questionNumber(question.getQuestionNumber())
-                .questionText(question.getQuestionText())
-                .explanation(question.getExplanation())
-                .category(question.getCategory())
-                .difficulty(question.getDifficulty())
-                .correctAnswer(question.getCorrectAnswer())
-                .sourceReference(question.getSourceReference())
-                .options(optionDtos)
-                .build();
-    }
-
-    private List<String> selectTargetChapters(LocalDate quizDate) {
-        // Create a mutable copy of the constitutional chapters
-        List<String> shuffledChapters = new ArrayList<>(quizConfig.getConstitutionalChapters());
-        Collections.shuffle(shuffledChapters, new Random(quizDate.toEpochDay()));
-        return shuffledChapters.subList(0, Math.min(4, shuffledChapters.size()));
-    }
-
-    private String getDiverseContext(List<String> searchQueries, List<String> targetChapters, LocalDate quizDate) {
-        StringBuilder contextBuilder = new StringBuilder();
-        Random dayRandom = new Random(quizDate.toEpochDay());
-
-        int maxDocs = quizConfig.getGeneration().getMaxContextDocuments();
-        double threshold = quizConfig.getGeneration().getSimilarityThreshold();
-
-        // Search using daily queries
-        for (String query : searchQueries) {
-            SearchRequest searchRequest = SearchRequest.builder()
-                    .query(query)
-                    .topK(maxDocs / searchQueries.size())
-                    .similarityThreshold(threshold - 0.05)
-                    .build();
-
-            List<Document> documents = vectorStore.similaritySearch(searchRequest);
-            List<Document> mutableDocuments = new ArrayList<>(documents);
-            Collections.shuffle(mutableDocuments, dayRandom);
-
-            appendDocumentsToContext(contextBuilder, mutableDocuments, "Search Query: " + query);
-        }
-
-        // Search using constitutional chapters
-        for (String chapter : targetChapters) {
-            SearchRequest chapterRequest = SearchRequest.builder()
-                    .query(chapter)
-                    .topK(2)
-                    .similarityThreshold(threshold)
-                    .build();
-
-            List<Document> chapterDocs = vectorStore.similaritySearch(chapterRequest);
-            appendDocumentsToContext(contextBuilder, chapterDocs, "Constitutional Reference: " + chapter);
-        }
-
-        String context = contextBuilder.toString();
-        log.debug("Built diverse context with {} characters using {} queries and {} chapters",
-                context.length(), searchQueries.size(), targetChapters.size());
-
-        return context;
-    }
-
-    private void appendDocumentsToContext(StringBuilder contextBuilder, List<Document> documents, String sourceLabel) {
-        for (Document doc : documents) {
-            contextBuilder.append(sourceLabel)
-                    .append(" | Source: ")
-                    .append(doc.getMetadata().getOrDefault("source", "Unknown"))
-                    .append(" | Page: ")
-                    .append(doc.getMetadata().getOrDefault("page_number", "N/A"))
-                    .append(" | Section: ")
-                    .append(doc.getMetadata().getOrDefault("chunk_index", "N/A"))
-                    .append("\n")
-                    .append(doc.getText())
-                    .append("\n\n");
-        }
-    }
-
-    private QuizGenerationResponse generateQuizWithStrategy(String context, LocalDate quizDate,
-                                                            int questionCount, String focusAreas, List<String> targetChapters) {
-
-        try {
-            String difficultyDistribution = calculateDifficultyDistribution(questionCount);
-
-            Map<String, Object> promptVariables = Map.of(
-                    "context", context != null ? context : "",
-                    "quizDate", quizDate.toString(),
-                    "questionCount", String.valueOf(questionCount),
-                    "difficultyDistribution", difficultyDistribution,
-                    "focusAreas", focusAreas,
-                    "targetChapters", String.join(", ", targetChapters));
-
-            String promptText = promptTemplateService.buildPrompt(promptVariables);
-            PromptTemplate promptTemplate = new PromptTemplate(promptText);
-            Prompt prompt = promptTemplate.create(promptVariables);
-
-            String response = chatModel.call(prompt).getResult().getOutput().getText();
-            log.debug("Received AI response for diverse quiz generation, length: {}", response.length());
-
-            String cleanedResponse = cleanJsonResponse(response);
-            return objectMapper.readValue(cleanedResponse, QuizGenerationResponse.class);
-
-        } catch (JsonProcessingException e) {
-            log.error("Failed to parse AI response as JSON: {}", e.getMessage());
-            throw new RuntimeException("Invalid quiz format generated by AI", e);
-        } catch (Exception e) {
-            log.error("Failed to generate diverse quiz with AI: {}", e.getMessage(), e);
-            throw new RuntimeException("AI quiz generation failed", e);
-        }
-    }
-
-    private String calculateDifficultyDistribution(int questionCount) {
-        int easy = questionCount / 3;
-        int medium = questionCount / 3;
-        int hard = questionCount - (easy + medium);
-        return String.format("%d Easy, %d Medium, %d Hard", easy, medium, hard);
-    }
-
-    public Map<String, Object> getQuizDiversityInfo(LocalDate date) {
-        long epochDay = date.toEpochDay();
-        QuizConfigurationProperties.SearchStrategy strategy = quizConfig.getSearchStrategyForDate(epochDay);
-        List<String> targetChapters = selectTargetChapters(date);
-
-        return Map.of(
-                "date", date.toString(),
-                "strategyName", strategy.getName(),
-                "focusAreas", strategy.getName(),
-                "targetChapters", targetChapters,
-                "searchQueries", strategy.getQueries(),
-                "totalStrategies", quizConfig.getDailySearchStrategies().size());
-    }
-
-    private String cleanJsonResponse(String response) {
-        String cleaned = response.trim();
-        if (cleaned.startsWith("```json")) {
-            cleaned = cleaned.substring(7);
-        }
-        if (cleaned.startsWith("```")) {
-            cleaned = cleaned.substring(3);
-        }
-        if (cleaned.endsWith("```")) {
-            cleaned = cleaned.substring(0, cleaned.length() - 3);
-        }
-        return cleaned.trim();
-    }
-
-    private void validateQuizResponse(QuizGenerationResponse response, int expectedQuestionCount) {
-        if (response == null || response.getQuestions() == null || response.getQuestions().isEmpty()) {
-            throw new IllegalArgumentException("No questions generated");
-        }
-        log.info("Quiz validation passed for {} questions", response.getQuestions().size());
-    }
-
-    private DailyQuiz createDailyQuiz(LocalDate quizDate, QuizGenerationResponse response) {
-        return DailyQuiz.builder()
-                .quizDate(quizDate)
-                .title(response.getTitle())
-                .description(response.getDescription())
-                .totalQuestions(response.getQuestions().size())
-                .isActive(true)
-                .expiresAt(quizDate.plusDays(1).atStartOfDay())
-                .build();
-    }
-
-    private List<CivicQuestion> createQuestions(DailyQuiz quiz, List<QuestionData> questionData) {
-        return questionData.stream().map(data -> {
-            List<QuestionOption> options = data.getOptions().stream()
-                    .map(optionData -> QuestionOption.builder()
-                            .optionLetter(optionData.getLetter())
-                            .optionText(optionData.getText())
-                            .build())
-                    .collect(Collectors.toList());
-
-            CivicQuestion question = CivicQuestion.builder()
-                    .dailyQuiz(quiz)
-                    .questionNumber(data.getQuestionNumber())
-                    .questionText(data.getQuestionText())
-                    .explanation(data.getExplanation())
-                    .category(data.getCategory())
-                    .difficulty(data.getDifficulty())
-                    .correctAnswer(data.getCorrectAnswer())
-                    .sourceReference(data.getSourceReference())
-                    .build();
-
-            options.forEach(option -> option.setQuestion(question));
-            question.setOptions(options);
-            return question;
-        }).collect(Collectors.toList());
     }
 
     @Getter
@@ -333,5 +187,4 @@ public class CivicQuizAIService {
     public static class OptionData {
         private String letter;
         private String text;
-    }
-}
+    }}
