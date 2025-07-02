@@ -11,7 +11,7 @@ import com.juahaki.juahaki.exception.CustomException;
 import com.juahaki.juahaki.mapper.UserMapper;
 import com.juahaki.juahaki.model.user.User;
 import com.juahaki.juahaki.repository.user.UserRepository;
-import com.juahaki.juahaki.service.email.IEmailService;
+import com.juahaki.juahaki.service.email.IAccountManagementEmailService;
 import com.juahaki.juahaki.service.otp.IOtpService;
 import com.juahaki.juahaki.util.jwt.JwtHelperService;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +38,7 @@ public class AuthService implements IAuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtHelperService jwtHelperService;
     private final IOtpService otpService;
-    private final IEmailService emailService;
+    private final IAccountManagementEmailService emailService;
     private final UserMapper userMapper;
 
     @Override

@@ -5,7 +5,7 @@ import com.juahaki.juahaki.exception.CustomException;
 import com.juahaki.juahaki.model.user.User;
 import com.juahaki.juahaki.repository.user.UserRepository;
 import com.juahaki.juahaki.security.oauth.OAuth2UserPrincipal;
-import com.juahaki.juahaki.service.email.IEmailService;
+import com.juahaki.juahaki.service.email.IAccountManagementEmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
@@ -22,7 +22,7 @@ import java.util.Optional;
 public class CustomOidcUserService extends OidcUserService {
 
     private final UserRepository userRepository;
-    private final IEmailService emailService;
+    private final IAccountManagementEmailService emailService;
 
     @Override
     @Transactional

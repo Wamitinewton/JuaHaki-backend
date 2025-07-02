@@ -9,7 +9,7 @@ import com.juahaki.juahaki.exception.CustomException;
 import com.juahaki.juahaki.mapper.AdminUserMapper;
 import com.juahaki.juahaki.model.user.User;
 import com.juahaki.juahaki.repository.user.UserRepository;
-import com.juahaki.juahaki.service.email.IEmailService;
+import com.juahaki.juahaki.service.email.IAccountManagementEmailService;
 import com.juahaki.juahaki.util.jwt.JwtHelperService;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,7 +32,7 @@ public class AdminUserManagementService implements IAdminUserManagementService {
 
     private final UserRepository userRepository;
     private final JwtHelperService jwtHelperService;
-    private final IEmailService emailService;
+    private final IAccountManagementEmailService emailService;
     private final AdminUserMapper adminUserMapper;
 
     @Override

@@ -22,7 +22,8 @@ import java.util.Map;
 @Slf4j
 public class EmailConsumerService {
 
-    private final EmailService emailService;
+    private final AccountManagementEmailService accountManagementEmailService;
+    private final EmailSender emailSender;
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Value("${app.kafka.email.retry-topic}")
@@ -70,7 +71,7 @@ public class EmailConsumerService {
                     e.getMessage(), e);
 
             handleEmailFailure(emailEvent, e);
-            acknowledgment.acknowledge(); // Acknowledge to prevent reprocessing by Kafka
+            acknowledgment.acknowledge();
         }
     }
 
@@ -122,7 +123,7 @@ public class EmailConsumerService {
                     .isHtml(emailEvent.isHtml())
                     .build();
 
-            emailService.sendEmail(emailRequest);
+            emailSender.sendEmail(emailRequest);
 
         } catch (Exception e) {
             log.error("Failed to process email event: eventId={}, error={}",

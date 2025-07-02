@@ -8,7 +8,7 @@ import com.juahaki.juahaki.dto.user.UserInfo;
 import com.juahaki.juahaki.exception.CustomException;
 import com.juahaki.juahaki.model.user.User;
 import com.juahaki.juahaki.repository.user.UserRepository;
-import com.juahaki.juahaki.service.email.IEmailService;
+import com.juahaki.juahaki.service.email.IAccountManagementEmailService;
 import com.juahaki.juahaki.service.otp.IOtpService;
 import com.juahaki.juahaki.util.jwt.JwtHelperService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,7 +32,7 @@ public class UserManagementService implements IUserManagementService {
     private final ModelMapper modelMapper;
     private final JwtHelperService jwtHelperService;
     private final IOtpService otpService;
-    private final IEmailService emailService;
+    private final IAccountManagementEmailService emailService;
 
     @Override
     @Transactional

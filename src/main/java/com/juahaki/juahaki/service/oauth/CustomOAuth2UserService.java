@@ -7,7 +7,7 @@ import com.juahaki.juahaki.model.oauth2.OAuth2UserInfoFactory;
 import com.juahaki.juahaki.model.user.User;
 import com.juahaki.juahaki.repository.user.UserRepository;
 import com.juahaki.juahaki.security.oauth.OAuth2UserPrincipal;
-import com.juahaki.juahaki.service.email.IEmailService;
+import com.juahaki.juahaki.service.email.IAccountManagementEmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -26,7 +26,7 @@ import java.util.Optional;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
-    private final IEmailService emailService;
+    private final IAccountManagementEmailService emailService;
 
     @Override
     @Transactional

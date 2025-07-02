@@ -8,7 +8,7 @@ import com.juahaki.juahaki.model.otp.Otp;
 import com.juahaki.juahaki.model.user.User;
 import com.juahaki.juahaki.repository.otp.OtpRepository;
 import com.juahaki.juahaki.repository.user.UserRepository;
-import com.juahaki.juahaki.service.email.IEmailService;
+import com.juahaki.juahaki.service.email.IAccountManagementEmailService;
 import com.juahaki.juahaki.util.otp.OtpGenerator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -23,7 +23,7 @@ public class OtpService implements IOtpService {
 
     private final OtpRepository otpRepository;
     private final UserRepository userRepository;
-    private final IEmailService emailService;
+    private final IAccountManagementEmailService emailService;
     private final OtpGenerator otpGenerator;
 
     @Value("${app.otp.expiry-minutes:10}")

@@ -13,7 +13,7 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class EmailService implements IEmailService {
+public class AccountManagementEmailService implements IAccountManagementEmailService {
 
     private final EmailProducerService emailProducerService;
 

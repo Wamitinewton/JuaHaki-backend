@@ -1,9 +1,8 @@
 package com.juahaki.juahaki.service.email;
 
-import com.juahaki.juahaki.dto.email.EmailRequest;
 import com.juahaki.juahaki.enums.Role;
 
-public interface IEmailService {
+public interface IAccountManagementEmailService {
 
 
     void sendSignUpOtpAsync(String email, String otp, String firstName, String userId);
