@@ -160,7 +160,7 @@ public class CustomOidcUserService extends OidcUserService {
     private void sendWelcomeEmail(User user) {
         try {
             String firstName = StringUtils.hasText(user.getFirstName()) ? user.getFirstName() : "Valued Customer";
-            emailService.sendWelcomeEmail(user.getEmail(), firstName);
+            emailService.sendWelcomeEmailAsync(user.getEmail(), firstName, user.getId().toString());
         } catch (Exception e) {
 
         }

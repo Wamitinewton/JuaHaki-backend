@@ -18,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -33,7 +32,6 @@ public class AdminUserManagementService implements IAdminUserManagementService {
 
     private final UserRepository userRepository;
     private final JwtHelperService jwtHelperService;
-    private final PasswordEncoder passwordEncoder;
     private final IEmailService emailService;
     private final AdminUserMapper adminUserMapper;
 
@@ -92,7 +90,7 @@ public class AdminUserManagementService implements IAdminUserManagementService {
         User savedUser = userRepository.save(user);
 
         try {
-            emailService.sendAccountLockedNotification(user.getEmail(), user.getFirstName());
+            emailService.sendAccountLockedNotificationAsync(user.getEmail(), user.getFirstName(), user.getId().toString());
         } catch (Exception e) {
             log.warn("Failed to send account locked notification to user: {}", user.getEmail(), e);
         }
@@ -118,7 +116,7 @@ public class AdminUserManagementService implements IAdminUserManagementService {
         User savedUser = userRepository.save(user);
 
         try {
-            emailService.sendAccountUnlockedNotification(user.getEmail(), user.getFirstName());
+            emailService.sendAccountUnlockedNotificationAsync(user.getEmail(), user.getFirstName(), user.getId().toString());
         } catch (Exception e) {
             log.warn("Failed to send account unlocked notification to user: {}", user.getEmail(), e);
         }
@@ -152,7 +150,7 @@ public class AdminUserManagementService implements IAdminUserManagementService {
         User savedUser = userRepository.save(user);
 
         try {
-            emailService.sendRoleChangeNotification(user.getEmail(), user.getFirstName(), oldRole, newRole);
+            emailService.sendRoleChangeNotificationAsync(user.getEmail(), user.getFirstName(), oldRole, newRole, user.getId().toString());
         } catch (Exception e) {
             log.warn("Failed to send role change notification to user: {}", user.getEmail(), e);
         }

@@ -164,7 +164,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private void sendWelcomeEmail(User user) {
         try {
             String firstName = StringUtils.hasText(user.getFirstName()) ? user.getFirstName() : "Valued Customer";
-            emailService.sendWelcomeEmail(user.getEmail(), firstName);
+            emailService.sendWelcomeEmailAsync(user.getEmail(), firstName, user.getId().toString());
         } catch (Exception e) {
             log.error("Failed to send welcome email to OAuth2 user {}: {}", user.getEmail(), e.getMessage());
 

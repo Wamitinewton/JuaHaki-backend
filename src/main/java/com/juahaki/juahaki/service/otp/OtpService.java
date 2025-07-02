@@ -45,7 +45,7 @@ public class OtpService implements IOtpService {
         otpRepository.save(otp);
 
         try {
-            emailService.sendSignUpOtp(user.getEmail(), otpCode, user.getFirstName());
+            emailService.sendSignUpOtpAsync(user.getEmail(), otpCode, user.getFirstName(), user.getId().toString());
         } catch (Exception e) {
             throw new CustomException("Failed to send verification email. Please try again.");
         }
@@ -69,7 +69,7 @@ public class OtpService implements IOtpService {
         otpRepository.save(otp);
 
         try {
-            emailService.sendForgotPasswordOtp(user.getEmail(), otpCode, user.getFirstName());
+            emailService.sendForgotPasswordOtpAsync(user.getEmail(), otpCode, user.getFirstName(), user.getId().toString());
         } catch (Exception e) {
             throw new CustomException("Failed to send password reset email. Please try again.");
         }
@@ -106,7 +106,7 @@ public class OtpService implements IOtpService {
         userRepository.save(user);
 
         try {
-            emailService.sendAccountActivationSuccess(user.getEmail(), user.getFirstName());
+            emailService.sendAccountActivationSuccessAsync(user.getEmail(), user.getFirstName(), user.getId().toString());
         } catch (Exception e) {
 
         }

@@ -1,254 +1,129 @@
 package com.juahaki.juahaki.service.email;
 
-import com.juahaki.juahaki.dto.email.EmailRequest;
+import com.juahaki.juahaki.dto.email.EmailEvent;
+import com.juahaki.juahaki.enums.EmailType;
 import com.juahaki.juahaki.enums.Role;
-import com.juahaki.juahaki.exception.EmailServiceException;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.context.Context;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EmailService implements IEmailService {
 
-    private final JavaMailSender mailSender;
-    private final TemplateEngine templateEngine;
+    private final EmailProducerService emailProducerService;
 
-    @Value("${spring.mail.username}")
-    private String fromEmail;
-
-    @Value("${app.email.from-name:Dream Shops}")
-    private String fromName;
-
-    @Value("${app.otp.expiry-minutes:10}")
-    private int otpExpiryMinutes;
-
-    @Value("${app.support.phone:+254-700-000-000}")
-    private String supportPhone;
-
-    @Value("${app.base-url:https://juahaki.com}")
-    private String baseUrl;
 
     @Override
-    public void sendEmail(EmailRequest emailRequest) {
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+    public void sendSignUpOtpAsync(String email, String otp, String firstName, String userId) {
+        log.info("Queueing signup OTP email for user: {}", email);
 
-            helper.setFrom(fromEmail, fromName);
-            helper.setTo(emailRequest.getTo());
-            helper.setSubject(emailRequest.getSubject());
-            helper.setReplyTo(fromEmail);
+        EmailEvent emailEvent = EmailEvent.signUpOtp(email, otp, firstName, userId);
+        emailProducerService.sendEmailEvent(emailEvent);
 
-            message.setHeader("X-Priority", "1");
-            message.setHeader("X-MSMail-Priority", "High");
-            message.setHeader("X-Mailer", "JuaHaki");
-            message.setHeader("X-Auto-Response-Suppress", "OOF, AutoReply");
-
-            String content;
-            if (emailRequest.getTemplateName() != null && !emailRequest.getTemplateName().isEmpty()) {
-                content = processTemplate(emailRequest.getTemplateName(), emailRequest.getVariables());
-            } else {
-                content = "Default email content";
-            }
-
-            if (emailRequest.isHtml()) {
-                helper.setText(generatePlainTextVersion(content), content);
-            } else {
-                helper.setText(content, false);
-            }
-
-            mailSender.send(message);
-        } catch (MessagingException e) {
-            throw new EmailServiceException("Failed to send email: " + e.getMessage(), e);
-        } catch (Exception e) {
-            throw new EmailServiceException("Failed to send email due to unexpected error", e);
-        }
+        log.debug("Signup OTP email queued successfully: eventId={}", emailEvent.getEventId());
     }
 
     @Override
-    public void sendSignUpOtp(String email, String otp, String firstName) {
-        Map<String, Object> variables = buildCommonVariables();
-        variables.put("firstName", firstName);
-        variables.put("otp", otp);
-        variables.put("expiryMinutes", otpExpiryMinutes);
+    public void sendForgotPasswordOtpAsync(String email, String otp, String firstName, String userId) {
+        log.info("Queueing forgot password OTP email for user: {}", email);
 
-        EmailRequest emailRequest = EmailRequest.builder()
-                .to(email)
-                .subject("🔐 Verify Your Account - JuaHaki")
-                .templateName("signup-otp")
-                .variables(variables)
-                .isHtml(true)
-                .build();
+        EmailEvent emailEvent = EmailEvent.forgotPasswordOtp(email, otp, firstName, userId);
+        emailProducerService.sendEmailEvent(emailEvent);
 
-        sendEmail(emailRequest);
+        log.debug("Forgot password OTP email queued successfully: eventId={}", emailEvent.getEventId());
     }
 
     @Override
-    public void sendForgotPasswordOtp(String email, String otp, String firstName) {
-        Map<String, Object> variables = buildCommonVariables();
-        variables.put("firstName", firstName);
-        variables.put("otp", otp);
-        variables.put("expiryMinutes", otpExpiryMinutes);
-        variables.put("timestamp", getCurrentTimestamp());
+    public void sendPasswordResetSuccessAsync(String email, String firstName, String userId) {
+        log.info("Queueing password reset success email for user: {}", email);
 
-        EmailRequest emailRequest = EmailRequest.builder()
-                .to(email)
-                .subject("🔑 Reset Your Password - JuaHaki")
-                .templateName("forgot-password-otp")
-                .variables(variables)
-                .isHtml(true)
-                .build();
+        EmailEvent emailEvent = EmailEvent.passwordResetSuccess(email, firstName, userId);
+        emailProducerService.sendEmailEvent(emailEvent);
 
-        sendEmail(emailRequest);
+        log.debug("Password reset success email queued successfully: eventId={}", emailEvent.getEventId());
     }
 
     @Override
-    public void sendPasswordResetSuccess(String email, String firstName) {
-        Map<String, Object> variables = buildCommonVariables();
-        variables.put("firstName", firstName);
-        variables.put("timestamp", getCurrentTimestamp());
+    public void sendWelcomeEmailAsync(String email, String firstName, String userId) {
+        log.info("Queueing welcome email for user: {}", email);
 
-        EmailRequest emailRequest = EmailRequest.builder()
-                .to(email)
-                .subject("✅ Password Reset Successful - JuaHaki")
-                .templateName("password-reset-success")
-                .variables(variables)
-                .isHtml(true)
-                .build();
+        EmailEvent emailEvent = EmailEvent.welcome(email, firstName, userId);
+        emailProducerService.sendEmailEvent(emailEvent);
 
-        sendEmail(emailRequest);
+        log.debug("Welcome email queued successfully: eventId={}", emailEvent.getEventId());
     }
 
     @Override
-    public void sendWelcomeEmail(String email, String firstName) {
-        Map<String, Object> variables = buildCommonVariables();
-        variables.put("firstName", firstName);
-        EmailRequest emailRequest = EmailRequest.builder()
-                .to(email)
-                .subject("🎉 Welcome to JuaHaki!")
-                .templateName("welcome")
-                .variables(variables)
-                .isHtml(true)
-                .build();
+    public void sendAccountActivationSuccessAsync(String email, String firstName, String userId) {
+        log.info("Queueing account activation success email for user: {}", email);
 
-        sendEmail(emailRequest);
+        EmailEvent emailEvent = EmailEvent.accountActivationSuccess(email, firstName, userId);
+        emailProducerService.sendEmailEvent(emailEvent);
+
+        log.debug("Account activation success email queued successfully: eventId={}", emailEvent.getEventId());
     }
 
     @Override
-    public void sendAccountActivationSuccess(String email, String firstName) {
-        Map<String, Object> variables = buildCommonVariables();
-        variables.put("firstName", firstName);
+    public void sendAccountLockedNotificationAsync(String email, String firstName, String userId) {
+        log.info("Queueing account locked notification email for user: {}", email);
 
-        EmailRequest emailRequest = EmailRequest.builder()
-                .to(email)
-                .subject("✅ Account Activated - JuaHaki")
-                .templateName("account-activation-success")
-                .variables(variables)
-                .isHtml(true)
-                .build();
+        EmailEvent emailEvent = EmailEvent.accountLocked(email, firstName, userId);
+        emailProducerService.sendEmailEvent(emailEvent);
 
-        sendEmail(emailRequest);
+        log.debug("Account locked notification email queued successfully: eventId={}", emailEvent.getEventId());
     }
 
     @Override
-    public void sendAccountLockedNotification(String email, String firstName) {
-        Map<String, Object> variables = buildCommonVariables();
-        variables.put("firstName", firstName);
-        variables.put("timestamp", getCurrentTimestamp());
+    public void sendAccountUnlockedNotificationAsync(String email, String firstName, String userId) {
+        log.info("Queueing account unlocked notification email for user: {}", email);
 
-        EmailRequest emailRequest = EmailRequest.builder()
-                .to(email)
-                .subject("🔒 Account Locked - JuaHaki")
-                .templateName("account-locked")
-                .variables(variables)
-                .isHtml(true)
-                .build();
+        EmailEvent emailEvent = EmailEvent.accountUnlocked(email, firstName, userId);
+        emailProducerService.sendEmailEvent(emailEvent);
 
-        sendEmail(emailRequest);
+        log.debug("Account unlocked notification email queued successfully: eventId={}", emailEvent.getEventId());
     }
 
     @Override
-    public void sendAccountUnlockedNotification(String email, String firstName) {
-        Map<String, Object> variables = buildCommonVariables();
-        variables.put("firstName", firstName);
-        variables.put("timestamp", getCurrentTimestamp());
+    public void sendRoleChangeNotificationAsync(String email, String firstName, Role oldRole, Role newRole, String userId) {
+        log.info("Queueing role change notification email for user: {} ({}->{})", email, oldRole, newRole);
 
-        EmailRequest emailRequest = EmailRequest.builder()
-                .to(email)
-                .subject("🔓 Account Unlocked - JuaHaki")
-                .templateName("account-unlocked")
-                .variables(variables)
-                .isHtml(true)
-                .build();
+        Map<String, Object> variables = Map.of(
+                "firstName", firstName,
+                "oldRole", formatRoleName(oldRole),
+                "newRole", formatRoleName(newRole),
+                "timestamp", LocalDateTime.now().toString()
+        );
 
-        sendEmail(emailRequest);
-    }
-
-    @Override
-    public void sendRoleChangeNotification(String email, String firstName, Role oldRole, Role newRole) {
-        Map<String, Object> variables = buildCommonVariables();
-        variables.put("firstName", firstName);
-        variables.put("oldRole", formatRoleName(oldRole));
-        variables.put("newRole", formatRoleName(newRole));
-        variables.put("timestamp", getCurrentTimestamp());
-
-        EmailRequest emailRequest = EmailRequest.builder()
-                .to(email)
+        EmailEvent emailEvent = EmailEvent.builder()
+                .eventId(generateEventId())
+                .emailType(EmailType.ROLE_CHANGE)
+                .recipient(email)
                 .subject("👤 Account Role Updated - JuaHaki")
                 .templateName("role-change")
-                .variables(variables)
+                .templateVariables(variables)
                 .isHtml(true)
+                .userId(userId)
+                .retryCount(0)
+                .createdAt(LocalDateTime.now())
                 .build();
 
-        sendEmail(emailRequest);
-    }
+        emailProducerService.sendEmailEvent(emailEvent);
 
-    private String processTemplate(String templateName, Map<String, Object> variables) {
-        Context context = new Context();
-        if (variables != null) {
-            context.setVariables(variables);
-        }
-        return templateEngine.process("email/" + templateName, context);
-    }
-
-    private String generatePlainTextVersion(String htmlContent) {
-        return htmlContent
-                .replaceAll("<[^>]+>", "")
-                .replaceAll("\\s+", " ")
-                .trim();
-    }
-
-    private Map<String, Object> buildCommonVariables() {
-        Map<String, Object> variables = new HashMap<>();
-        variables.put("supportEmail", fromEmail);
-        variables.put("supportPhone", supportPhone);
-        variables.put("companyName", "JuaHaki Civic Educator");
-        variables.put("currentYear", java.time.Year.now().getValue());
-        variables.put("baseUrl", baseUrl);
-        variables.put("loginUrl", baseUrl + "/login");
-        variables.put("contactUrl", baseUrl + "/contact");
-        return variables;
-    }
-
-    private String getCurrentTimestamp() {
-        return LocalDateTime.now()
-                .format(DateTimeFormatter.ofPattern("MMMM dd, yyyy 'at' hh:mm a"));
+        log.debug("Role change notification email queued successfully: eventId={}", emailEvent.getEventId());
     }
 
     private String formatRoleName(Role role) {
         if (role == null) return "Unknown";
         return role.name().toLowerCase().replace("_", " ");
+    }
+
+    private String generateEventId() {
+        return "email_" + System.currentTimeMillis() + "_" +
+                java.util.UUID.randomUUID().toString().substring(0, 8);
     }
 }

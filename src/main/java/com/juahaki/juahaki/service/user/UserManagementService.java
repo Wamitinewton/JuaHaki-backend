@@ -235,7 +235,7 @@ public class UserManagementService implements IUserManagementService {
         userRepository.save(user);
 
         try {
-            emailService.sendPasswordResetSuccess(user.getEmail(), user.getFirstName());
+            emailService.sendPasswordResetSuccessAsync(user.getEmail(), user.getFirstName(), user.getId().toString());
             log.info("Password reset successful for user: {}", user.getEmail());
         } catch (Exception e) {
             log.warn("Failed to send password reset success email to user: {}", user.getEmail(), e);

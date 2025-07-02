@@ -58,6 +58,31 @@ spring:
             user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
             user-name-attribute: sub
 
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 1
+        compression.type: snappy
+        batch.size: 16384
+        linger.ms: 5
+    consumer:
+      group-id: ${app.kafka.consumer.group-id}
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      max-poll-records: 10
+      properties:
+        spring.json.trusted.packages: "com.juahaki.juahaki.dto.email"
+        session.timeout.ms: 30000
+        heartbeat.interval.ms: 10000
+
   ai:
     openai:
       api-key: ${open.ai.key}
@@ -121,6 +146,21 @@ app:
         core-pool-size: 5
         max-pool-size: 10
         queue-capacity: 100
+
+  kafka:
+    email:
+      topic: juahaki.email.events
+      retry-topic: juahaki.email.retry
+      dlt-topic: juahaki.email.dlt
+    consumer:
+      group-id: juahaki-email-service
+
+  email:
+    max-retry-attempts: 3
+    from-name: JuaHaki Civic Educator
+    base-url: juahaki.com
+    support:
+      phone: +254-700-000-000
 
 api:
   prefix: api/v1

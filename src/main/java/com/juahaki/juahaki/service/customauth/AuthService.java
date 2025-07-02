@@ -262,7 +262,7 @@ public class AuthService implements IAuthService {
 
     private void sendWelcomeEmail(User user) {
         try {
-            emailService.sendWelcomeEmail(user.getEmail(), user.getFirstName());
+            emailService.sendWelcomeEmailAsync(user.getEmail(), user.getFirstName(), String.valueOf(user.getId()));
         } catch (Exception e) {
             log.warn("Failed to send welcome email to user: {}", user.getEmail(), e);
         }
