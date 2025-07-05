@@ -23,6 +23,30 @@ QUESTION DISTRIBUTION:
 - Cover: {focusAreas}
 - Reference multiple constitutional chapters
 
+CRITICAL ANSWER DISTRIBUTION REQUIREMENTS:
+You MUST ensure the correct answers are distributed unpredictably across ALL options (A, B, C, D).
+
+ANSWER RANDOMIZATION STRATEGY:
+- Use the quiz date ({quizDate}) as a randomization seed
+- For each question number, calculate: (question_number + day_of_year) % 4
+- This gives you 0=A, 1=B, 2=C, 3=D for correct answer placement
+- Example calculation for {quizDate}:
+  * Question 1: Correct answer goes to option determined by calculation
+  * Question 2: Correct answer goes to different option based on calculation
+  * Continue this pattern to ensure NO predictable sequence
+
+MANDATORY DISTRIBUTION CHECK:
+- Across all {questionCount} questions, ensure roughly equal distribution
+- No more than 40% of answers should be the same letter
+- If calculation results in too many of same letter, shift some to balance
+- Final distribution should be approximately 25% each for A, B, C, D
+
+ANSWER PLACEMENT RULES:
+1. Calculate the target correct option for each question using date-based randomization
+2. Write the CORRECT answer content in that calculated position
+3. Fill other positions with plausible but incorrect alternatives
+4. Double-check that correct answers are not clustered in same positions
+
 Generate for date: {quizDate}
 
 Return valid JSON only in this exact format:
@@ -36,14 +60,21 @@ Return valid JSON only in this exact format:
             "category": "Category name",
             "difficulty": "Easy/Medium/Hard",
             "options": [
-                {{"letter": "A", "text": "Option A"}},
-                {{"letter": "B", "text": "Option B"}},
-                {{"letter": "C", "text": "Option C"}},
-                {{"letter": "D", "text": "Option D"}}
+                {{"letter": "A", "text": "Option A text"}},
+                {{"letter": "B", "text": "Option B text"}},
+                {{"letter": "C", "text": "Option C text"}},
+                {{"letter": "D", "text": "Option D text"}}
             ],
-            "correctAnswer": "A",
+            "correctAnswer": "X",
             "explanation": "Detailed explanation with constitutional reference",
             "sourceReference": "Article X, Section Y of the Constitution of Kenya 2010"
         }}
     ]
 }}
+
+FINAL VERIFICATION:
+Before returning the JSON, verify:
+1. Correct answers are distributed across A, B, C, D without obvious pattern
+2. No more than 3 consecutive questions have same correct letter
+3. Each option (A, B, C, D) appears as correct answer at least once
+4. Distribution is as random and unpredictable as possible

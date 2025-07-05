@@ -45,7 +45,7 @@ public class CivicQuizService implements ICivicQuizService {
     private final QuizResponseMapper responseMapper;
     private final QuizEntityMapper entityMapper;
 
-    private static final long SESSION_TIMEOUT_MINUTES = 30;
+    private static final long SESSION_TIMEOUT_MINUTES = 600;
     private static final String QUIZ_QUESTIONS_PREFIX = "quiz:questions:";
 
     @Override
@@ -71,7 +71,7 @@ public class CivicQuizService implements ICivicQuizService {
         DailyQuiz quiz = quizOptional.get();
         cacheQuizQuestionsInRedis(quiz);
 
-        Optional<UserQuizAttempt> userAttempt = userQuizAttemptRepository.findByUserAndQuizDate(user, date);
+        Optional<UserQuizAttempt> userAttempt = userQuizAttemptRepository.findByUserAndDailyQuiz(user, quiz);
         UserQuizSummary lastAttempt = null;
 
         if (userAttempt.isPresent()) {

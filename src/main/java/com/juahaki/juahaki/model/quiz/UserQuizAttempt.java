@@ -74,9 +74,9 @@ public class UserQuizAttempt {
     }
 
     public boolean isExpired() {
-        // Quiz session expires after 30 minutes of inactivity
+        // Quiz session expires after 600 minutes of inactivity
         return this.status == QuizStatus.ACTIVE &&
-                LocalDateTime.now().isAfter(this.startedAt.plusMinutes(30));
+                LocalDateTime.now().isAfter(this.startedAt.plusMinutes(600));
     }
 
     public String getPerformanceLevel() {

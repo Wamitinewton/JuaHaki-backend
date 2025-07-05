@@ -24,6 +24,9 @@ public interface UserQuizAttemptRepository extends JpaRepository<UserQuizAttempt
     @Query("SELECT uqa FROM UserQuizAttempt uqa WHERE uqa.user = :user AND uqa.dailyQuiz.quizDate = :date")
     Optional<UserQuizAttempt> findByUserAndQuizDate(@Param("user") User user, @Param("date") LocalDate date);
 
+    @Query("SELECT uqa FROM UserQuizAttempt uqa WHERE uqa.user = :user AND uqa.dailyQuiz = :dailyQuiz")
+    Optional<UserQuizAttempt> findByUserAndDailyQuiz(@Param("user") User user, @Param("dailyQuiz") DailyQuiz dailyQuiz);
+
     @Query("SELECT uqa FROM UserQuizAttempt uqa WHERE uqa.status = :status")
     List<UserQuizAttempt> findByStatus(@Param("status") QuizStatus status);
 

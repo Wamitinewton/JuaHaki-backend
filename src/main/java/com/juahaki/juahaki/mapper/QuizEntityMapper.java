@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,13 +24,14 @@ public class QuizEntityMapper {
 
 
     public DailyQuiz createDailyQuiz(LocalDate quizDate, QuizGenerationResponse response) {
+        LocalDateTime now = LocalDateTime.now();
         return DailyQuiz.builder()
                 .quizDate(quizDate)
                 .title(response.getTitle())
                 .description(response.getDescription())
                 .totalQuestions(response.getQuestions().size())
                 .isActive(true)
-                .expiresAt(quizDate.plusDays(1).atStartOfDay())
+                .expiresAt(now.plusHours(24))
                 .build();
     }
 
