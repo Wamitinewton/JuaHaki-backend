@@ -158,7 +158,10 @@ public class QuizAIBuilder {
             metadata.put("primary_category", "Legislation");
         } else if (filename.toLowerCase().contains("budget") || filename.toLowerCase().contains("finance")) {
             metadata.put("primary_category", "Public Finance");
-        } else {
+        } else if (filename.toLowerCase().contains("elections") || filename.toLowerCase().contains("acts")) {
+            metadata.put("primary_category", "Elections Act");
+        }
+        else {
             metadata.put("primary_category", "General Civic Education");
         }
 
