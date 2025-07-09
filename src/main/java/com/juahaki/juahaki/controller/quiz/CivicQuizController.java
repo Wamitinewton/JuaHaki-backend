@@ -22,7 +22,6 @@ public class CivicQuizController {
 
     private final ICivicQuizService civicQuizService;
 
-
     @GetMapping("/today")
     public ResponseEntity<ApiResponse> getTodaysQuiz(HttpServletRequest request) {
         log.info("Getting today's quiz info");
