@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ApiResponse> handleCustomException(CustomException ex, WebRequest request) {
         log.warn("Custom exception: {} at {}", ex.getMessage(), request.getDescription(false));
-        
+
         HttpStatus status = mapCustomExceptionToHttpStatus(ex.getMessage());
         return ResponseEntity.status(status)
                 .body(new ApiResponse(ex.getMessage(), null));
@@ -134,9 +134,9 @@ public class GlobalExceptionHandler {
         log.error("Data integrity violation at {}", request.getDescription(false));
 
         String message = "Data integrity violation";
-        if (ex.getMessage() != null && 
-           (ex.getMessage().toLowerCase().contains("duplicate") || 
-            ex.getMessage().toLowerCase().contains("unique"))) {
+        if (ex.getMessage() != null &&
+                (ex.getMessage().toLowerCase().contains("duplicate") ||
+                        ex.getMessage().toLowerCase().contains("unique"))) {
             message = "The provided data already exists";
         }
 
@@ -177,26 +177,26 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({
-        MissingServletRequestParameterException.class,
-        MissingRequestHeaderException.class
+            MissingServletRequestParameterException.class,
+            MissingRequestHeaderException.class
     })
     public ResponseEntity<ApiResponse> handleMissingRequestDataException(Exception ex, WebRequest request) {
         log.warn("Missing request data at {}: {}", request.getDescription(false), ex.getMessage());
-        
+
         String message;
         if (ex instanceof MissingServletRequestParameterException) {
             message = "Missing required parameter: " + ((MissingServletRequestParameterException) ex).getParameterName();
         } else {
             message = "Missing required header: " + ((MissingRequestHeaderException) ex).getHeaderName();
         }
-        
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ApiResponse(message, null));
     }
 
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<ApiResponse> handleNoHandlerFoundException(NoHandlerFoundException ex, WebRequest request) {
-        log.warn("Endpoint not found: {} {} at {}", ex.getHttpMethod(), ex.getRequestURL(), 
+        log.warn("Endpoint not found: {} {} at {}", ex.getHttpMethod(), ex.getRequestURL(),
                 request.getDescription(false));
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ApiResponse("Endpoint not found", null));
@@ -218,30 +218,30 @@ public class GlobalExceptionHandler {
         if (lowerMessage.contains("not found") || lowerMessage.contains("does not exist")) {
             return HttpStatus.NOT_FOUND;
         }
-        
+
         if (lowerMessage.contains("already exists") || lowerMessage.contains("duplicate")) {
             return HttpStatus.CONFLICT;
         }
-        
-        if (lowerMessage.contains("unauthorized") || 
-            lowerMessage.contains("invalid credentials") ||
-            lowerMessage.contains("authentication failed") || 
-            lowerMessage.contains("invalid token") ||
-            lowerMessage.contains("expired")) {
+
+        if (lowerMessage.contains("unauthorized") ||
+                lowerMessage.contains("invalid credentials") ||
+                lowerMessage.contains("authentication failed") ||
+                lowerMessage.contains("invalid token") ||
+                lowerMessage.contains("expired")) {
             return HttpStatus.UNAUTHORIZED;
         }
-        
-        if (lowerMessage.contains("forbidden") || 
-            lowerMessage.contains("access denied") ||
-            lowerMessage.contains("permission")) {
+
+        if (lowerMessage.contains("forbidden") ||
+                lowerMessage.contains("access denied") ||
+                lowerMessage.contains("permission")) {
             return HttpStatus.FORBIDDEN;
         }
-        
-        if (lowerMessage.contains("disabled") || 
-            lowerMessage.contains("not verified") ||
-            lowerMessage.contains("invalid") || 
-            lowerMessage.contains("required") ||
-            lowerMessage.contains("verification failed")) {
+
+        if (lowerMessage.contains("disabled") ||
+                lowerMessage.contains("not verified") ||
+                lowerMessage.contains("invalid") ||
+                lowerMessage.contains("required") ||
+                lowerMessage.contains("verification failed")) {
             return HttpStatus.BAD_REQUEST;
         }
 

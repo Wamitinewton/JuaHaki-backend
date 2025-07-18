@@ -7,11 +7,12 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class RedisQuestionDto {
+public class QuestionDto {
     private Long questionId;
     private int questionNumber;
     private String questionText;
@@ -20,13 +21,13 @@ public class RedisQuestionDto {
     private String difficulty;
     private String correctAnswer;
     private String sourceReference;
-    private List<RedisOptionDto> options;
+    private List<OptionDto> options;
 
     @Data
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class RedisOptionDto {
+    public static class OptionDto {
         private String optionLetter;
         private String optionText;
     }

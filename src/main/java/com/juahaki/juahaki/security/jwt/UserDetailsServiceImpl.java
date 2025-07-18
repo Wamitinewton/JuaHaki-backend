@@ -1,6 +1,5 @@
 package com.juahaki.juahaki.security.jwt;
 
-import com.juahaki.juahaki.model.user.User;
 import com.juahaki.juahaki.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;

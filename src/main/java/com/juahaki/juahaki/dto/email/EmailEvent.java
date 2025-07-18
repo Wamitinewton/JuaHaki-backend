@@ -170,12 +170,12 @@ public class EmailEvent {
                 .build();
     }
 
-    public void incrementRetryCount() {
-        this.retryCount++;
-    }
-
     private static String generateEventId() {
         return "email_" + System.currentTimeMillis() + "_" +
                 java.util.UUID.randomUUID().toString().substring(0, 8);
+    }
+
+    public void incrementRetryCount() {
+        this.retryCount++;
     }
 }

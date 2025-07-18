@@ -2,6 +2,8 @@ package com.juahaki.juahaki.service.email;
 
 import com.juahaki.juahaki.dto.email.EmailRequest;
 import com.juahaki.juahaki.exception.EmailServiceException;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,8 +13,6 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import java.util.Map;
 
 @Service
@@ -102,7 +102,6 @@ public class EmailSender {
             throw new EmailServiceException("Failed to process email template: " + templateName, e);
         }
     }
-
 
 
     private String generatePlainTextVersion(String htmlContent) {

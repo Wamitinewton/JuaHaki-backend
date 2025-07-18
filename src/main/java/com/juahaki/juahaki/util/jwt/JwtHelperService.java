@@ -3,11 +3,11 @@ package com.juahaki.juahaki.util.jwt;
 import com.juahaki.juahaki.enums.Role;
 import com.juahaki.juahaki.exception.CustomException;
 import com.juahaki.juahaki.model.user.User;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -224,7 +224,7 @@ public class JwtHelperService {
         try {
             String accessToken = jwtUtil.generateAccessToken(user);
             String refreshToken = jwtUtil.generateRefreshToken(user);
-            return new String[] { accessToken, refreshToken };
+            return new String[]{accessToken, refreshToken};
         } catch (Exception e) {
             log.error("Error generating token pair for user {}: {}", user.getId(), e.getMessage());
             throw new CustomException("Failed to generate authentication tokens");
@@ -251,7 +251,7 @@ public class JwtHelperService {
             String newAccessToken = jwtUtil.generateAccessToken(user);
             String newRefreshToken = jwtUtil.generateRefreshToken(user);
 
-            return new String[] { newAccessToken, newRefreshToken };
+            return new String[]{newAccessToken, newRefreshToken};
         } catch (Exception e) {
             log.error("Error refreshing token pair: {}", e.getMessage());
             throw new CustomException("Failed to refresh token pair");

@@ -2,11 +2,7 @@ package com.juahaki.juahaki.service.document;
 
 import com.juahaki.juahaki.dto.firebase.FirebaseFileDto;
 import com.juahaki.juahaki.service.firebase.FirebaseStorageService;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.reader.pdf.PagePdfDocumentReader;
@@ -31,20 +27,15 @@ public class PdfDocumentProcessingService {
 
     private final VectorStore vectorStore;
     private final FirebaseStorageService firebaseStorageService;
-
+    private final Set<String> processedDocuments = Collections.synchronizedSet(new HashSet<>());
     @Value("${app.document.processing.chunk-size:1000}")
     private int chunkSize;
-
     @Value("${app.document.processing.chunk-overlap:200}")
     private int chunkOverlap;
-
     @Value("${app.document.processing.max-file-size:50485760}")
     private long maxFileSize;
-
     @Value("${app.document.processing.supported-types:pdf}")
     private String supportedTypes;
-
-    private final Set<String> processedDocuments = Collections.synchronizedSet(new HashSet<>());
 
     /**
      * Upload and process a single PDF document

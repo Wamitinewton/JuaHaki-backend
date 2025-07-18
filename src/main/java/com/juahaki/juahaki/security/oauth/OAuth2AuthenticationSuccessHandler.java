@@ -24,14 +24,12 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    @Value("${app.oauth2.authorizedRedirectUri}")
-    private String redirectUri;
-
-    @Value("${app.oauth2.webRedirectUri:#{null}}")
-    private String webRedirectUri;
-
     private final JwtHelperService jwtHelperService;
     private final UserRepository userRepository;
+    @Value("${app.oauth2.authorizedRedirectUri}")
+    private String redirectUri;
+    @Value("${app.oauth2.webRedirectUri:#{null}}")
+    private String webRedirectUri;
 
     @Override
     protected String determineTargetUrl(

@@ -44,7 +44,7 @@ public class AuthService implements IAuthService {
     @Override
     public UserInfo signUp(SignUpRequest signUpRequest) {
         validateSignUpRequest(signUpRequest);
-        
+
         if (userRepository.existsByUsername(signUpRequest.getUsername())) {
             throw new AlreadyExistsException("Username already exists");
         }
@@ -55,10 +55,10 @@ public class AuthService implements IAuthService {
         try {
             User user = createUser(signUpRequest);
             User savedUser = userRepository.save(user);
-            
+
             sendWelcomeEmail(savedUser);
             sendVerificationOtp(savedUser);
-            
+
             return userMapper.mapToUserInfo(savedUser);
         } catch (DataIntegrityViolationException e) {
             log.error("Data integrity violation during user registration", e);
@@ -72,22 +72,22 @@ public class AuthService implements IAuthService {
     @Override
     public JwtResponse login(LoginRequest loginRequest) {
         validateLoginRequest(loginRequest);
-        
+
         try {
             User user = findUserByUsernameOrEmail(loginRequest.getUsernameOrEmail());
-            
+
             validateUserAccountStatus(user);
-            
+
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginRequest.getUsernameOrEmail(),
                             loginRequest.getPassword()
                     )
             );
-            
+
             User authenticatedUser = (User) authentication.getPrincipal();
             return createJwtResponse(authenticatedUser);
-            
+
         } catch (AuthenticationException e) {
             log.warn("Authentication failed for user: {}", loginRequest.getUsernameOrEmail());
             throw new BadCredentialsException("Invalid username/email or password");
@@ -154,7 +154,7 @@ public class AuthService implements IAuthService {
         if (request == null) {
             throw new IllegalArgumentException("Registration data is required");
         }
-        
+
         if (!StringUtils.hasText(request.getUsername())) {
             throw new IllegalArgumentException("Username is required");
         }
@@ -177,7 +177,7 @@ public class AuthService implements IAuthService {
         if (request == null) {
             throw new IllegalArgumentException("Login data is required");
         }
-        
+
         if (!StringUtils.hasText(request.getUsernameOrEmail())) {
             throw new IllegalArgumentException("Username or email is required");
         }
@@ -198,7 +198,7 @@ public class AuthService implements IAuthService {
         if (request == null) {
             throw new IllegalArgumentException("OTP verification data is required");
         }
-        
+
         if (!StringUtils.hasText(request.getEmail())) {
             throw new IllegalArgumentException("Email is required");
         }
@@ -226,7 +226,6 @@ public class AuthService implements IAuthService {
 
         return userBuilder.build();
     }
-
 
 
     @Override

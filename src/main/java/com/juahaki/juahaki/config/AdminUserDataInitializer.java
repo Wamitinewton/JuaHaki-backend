@@ -80,7 +80,7 @@ public class AdminUserDataInitializer implements ApplicationRunner {
                 defaultAdminUsername, defaultAdminEmail);
 
         if (isProductionEnvironment()) {
-            log.warn("⚠️  SECURITY WARNING: Default admin user created in production environment. " +
+            log.warn(" SECURITY WARNING: Default admin user created in production environment. " +
                     "Please change the default password immediately!");
         }
     }

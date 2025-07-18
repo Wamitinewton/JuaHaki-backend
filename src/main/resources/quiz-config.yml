@@ -8,7 +8,7 @@ quiz:
         - "right to life liberty security"
         - "equality non-discrimination"
         - "property rights protection"
-    
+
     - name: "Government Structure and Powers"
       queries:
         - "executive president cabinet ministers"
@@ -16,7 +16,7 @@ quiz:
         - "judiciary court system magistrates"
         - "separation of powers checks balances"
         - "independent commissions functions"
-    
+
     - name: "Electoral Democracy"
       queries:
         - "elections voting procedures registration"
@@ -24,7 +24,7 @@ quiz:
         - "electoral boundaries delimitation"
         - "election disputes resolution tribunals"
         - "campaign financing disclosure"
-    
+
     - name: "Public Finance Management"
       queries:
         - "national budget preparation approval"
@@ -32,7 +32,7 @@ quiz:
         - "public debt borrowing limits"
         - "county revenue sharing formula"
         - "audit accountability transparency"
-    
+
     - name: "Legal System and Justice"
       queries:
         - "court procedures jurisdiction hierarchy"
@@ -40,7 +40,7 @@ quiz:
         - "criminal justice system procedures"
         - "civil procedures dispute resolution"
         - "legal aid services provision"
-    
+
     - name: "Devolution and County Government"
       queries:
         - "county governments devolution"
@@ -48,7 +48,7 @@ quiz:
         - "governor powers responsibilities"
         - "inter-governmental relations"
         - "public participation citizen engagement"
-    
+
     - name: "Public Service and Ethics"
       queries:
         - "public service commission functions"

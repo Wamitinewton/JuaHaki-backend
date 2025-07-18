@@ -14,7 +14,7 @@ public enum Role {
     }
 
     public static Role fromAuthority(String authority) {
-        for (Role role: values()) {
+        for (Role role : values()) {
             if (role.getAuthority().equals(authority)) {
                 return role;
             }

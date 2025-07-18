@@ -76,7 +76,7 @@ public class RedisConfig {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        ObjectMapper objectMapper = createQuizObjectMapper();
+        ObjectMapper objectMapper = createObjectMapper();
         Jackson2JsonRedisSerializer<Object> jsonRedisSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, Object.class);
         StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
 
@@ -93,9 +93,9 @@ public class RedisConfig {
     @Bean
     @Primary
     public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
-        log.info("Configuring Redis Cache Manager with Quiz-specific configurations");
+        log.info("Configuring Redis Cache Manager for general application caching");
 
-        ObjectMapper objectMapper = createQuizObjectMapper();
+        ObjectMapper objectMapper = createObjectMapper();
         GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 
         RedisCacheConfiguration defaultCacheConfig = RedisCacheConfiguration.defaultCacheConfig()
@@ -107,46 +107,18 @@ public class RedisConfig {
                 .disableCachingNullValues();
 
         Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
-        
-        cacheConfigurations.put("dailyQuiz", defaultCacheConfig
-                .entryTtl(Duration.ofHours(24))
-                .prefixCacheNameWith("quiz:daily:"));
-        
-        cacheConfigurations.put("quizInfo", defaultCacheConfig
+
+        cacheConfigurations.put("userProfiles", defaultCacheConfig
+                .entryTtl(Duration.ofMinutes(30))
+                .prefixCacheNameWith("user:profiles:"));
+
+        cacheConfigurations.put("authTokens", defaultCacheConfig
+                .entryTtl(Duration.ofMinutes(15))
+                .prefixCacheNameWith("auth:tokens:"));
+
+        cacheConfigurations.put("documentSearch", defaultCacheConfig
                 .entryTtl(Duration.ofHours(2))
-                .prefixCacheNameWith("quiz:info:"));
-        
-        cacheConfigurations.put("generatedQuiz", defaultCacheConfig
-                .entryTtl(Duration.ofHours(24))
-                .prefixCacheNameWith("quiz:generated:"));
-
-        cacheConfigurations.put("quizDetails", defaultCacheConfig
-                .entryTtl(Duration.ofHours(24))
-                .prefixCacheNameWith("quiz:details:"));
-        
-        cacheConfigurations.put("quizQuestions", defaultCacheConfig
-                .entryTtl(Duration.ofHours(24))
-                .prefixCacheNameWith("quiz:questions:"));
-        
-        cacheConfigurations.put("leaderboard", defaultCacheConfig
-                .entryTtl(Duration.ofMinutes(30))
-                .prefixCacheNameWith("quiz:leaderboard:"));
-        
-        cacheConfigurations.put("quizStats", defaultCacheConfig
-                .entryTtl(Duration.ofHours(1))
-                .prefixCacheNameWith("quiz:stats:"));
-
-        cacheConfigurations.put("userQuizHistory", defaultCacheConfig
-                .entryTtl(Duration.ofMinutes(30))
-                .prefixCacheNameWith("quiz:history:metadata:"));
-
-        cacheConfigurations.put("quizAIContext", defaultCacheConfig
-                .entryTtl(Duration.ofHours(6))
-                .prefixCacheNameWith("quiz:ai:context:"));
-
-        cacheConfigurations.put("quizQuality", defaultCacheConfig
-                .entryTtl(Duration.ofHours(12))
-                .prefixCacheNameWith("quiz:quality:"));
+                .prefixCacheNameWith("docs:search:"));
 
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(defaultCacheConfig)
@@ -154,11 +126,11 @@ public class RedisConfig {
                 .build();
     }
 
-    private ObjectMapper createQuizObjectMapper() {
+    private ObjectMapper createObjectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
-        
+
         objectMapper.registerModule(new JavaTimeModule());
-        
+
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
         objectMapper.activateDefaultTyping(

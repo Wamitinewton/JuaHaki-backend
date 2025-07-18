@@ -32,7 +32,6 @@ public interface IAdminUserManagementService {
     AdminUserResponse changeUserRole(HttpServletRequest request, Long userId, Role newRole);
 
 
-
     UserStatsResponse getUserStatistics(HttpServletRequest request);
 
 

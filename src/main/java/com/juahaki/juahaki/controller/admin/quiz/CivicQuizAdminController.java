@@ -2,12 +2,15 @@ package com.juahaki.juahaki.controller.admin.quiz;
 
 import com.juahaki.juahaki.response.ApiResponse;
 import com.juahaki.juahaki.service.ai.quiz.CivicQuizAIService;
-import com.juahaki.juahaki.service.ai.quiz.ICivicQuizService;
+import com.juahaki.juahaki.service.quiz.ICivicQuizService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 import java.util.Map;
@@ -39,7 +42,6 @@ public class CivicQuizAdminController {
         }
     }
 
- 
 
     @PostMapping("/admin/maintenance/cleanup-expired")
     public ResponseEntity<ApiResponse> cleanupExpiredSessions() {

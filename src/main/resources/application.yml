@@ -2,7 +2,7 @@ spring:
   application:
     name: juahaki
   config:
-    import: 
+    import:
       - "file:keys.properties"
       - "classpath:quiz-config.yml"
   jpa:

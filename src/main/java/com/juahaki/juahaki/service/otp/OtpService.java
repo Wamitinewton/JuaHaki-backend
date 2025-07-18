@@ -1,7 +1,5 @@
 package com.juahaki.juahaki.service.otp;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
 import com.juahaki.juahaki.enums.OtpType;
 import com.juahaki.juahaki.exception.CustomException;
 import com.juahaki.juahaki.model.otp.Otp;
@@ -10,12 +8,15 @@ import com.juahaki.juahaki.repository.otp.OtpRepository;
 import com.juahaki.juahaki.repository.user.UserRepository;
 import com.juahaki.juahaki.service.email.IAccountManagementEmailService;
 import com.juahaki.juahaki.util.otp.OtpGenerator;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import lombok.RequiredArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor

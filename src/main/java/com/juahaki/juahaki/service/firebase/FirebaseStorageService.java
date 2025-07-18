@@ -73,7 +73,7 @@ public class FirebaseStorageService {
                 log.warn("File not found in Firebase Storage: {}", storagePath);
             }
             return deleted;
-        }catch (Exception e) {
+        } catch (Exception e) {
             log.error("Error deleting file from Firebase Storage: {}", storagePath, e);
             return false;
         }
@@ -84,9 +84,9 @@ public class FirebaseStorageService {
 
         try {
             Iterable<Blob> blobs = storage.list(
-                    bucketName,
-                    Storage.BlobListOption.prefix("juahaki/")
-            )
+                            bucketName,
+                            Storage.BlobListOption.prefix("juahaki/")
+                    )
                     .iterateAll();
 
             for (Blob blob : blobs) {

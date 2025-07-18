@@ -1,6 +1,6 @@
 package com.juahaki.juahaki.mapper;
 
-import com.juahaki.juahaki.dto.quiz.civic.RedisQuestionDto;
+import com.juahaki.juahaki.dto.quiz.civic.QuestionDto;
 import com.juahaki.juahaki.model.quiz.CivicQuestion;
 import com.juahaki.juahaki.model.quiz.DailyQuiz;
 import com.juahaki.juahaki.model.quiz.QuestionOption;
@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class QuizEntityMapper {
-
 
     public DailyQuiz createDailyQuiz(LocalDate quizDate, QuizGenerationResponse response) {
         LocalDateTime now = LocalDateTime.now();
@@ -82,17 +81,17 @@ public class QuizEntityMapper {
     }
 
     /**
-     * Convert CivicQuestion to Redis DTO
+     * Convert CivicQuestion to DTO (optional utility method)
      */
-    public RedisQuestionDto convertToRedisDto(CivicQuestion question) {
-        List<RedisQuestionDto.RedisOptionDto> optionDtos = question.getOptions().stream()
-                .map(option -> RedisQuestionDto.RedisOptionDto.builder()
+    public QuestionDto convertToQuestionDto(CivicQuestion question) {
+        List<QuestionDto.OptionDto> optionDtos = question.getOptions().stream()
+                .map(option -> QuestionDto.OptionDto.builder()
                         .optionLetter(option.getOptionLetter())
                         .optionText(option.getOptionText())
                         .build())
                 .collect(Collectors.toList());
 
-        return RedisQuestionDto.builder()
+        return QuestionDto.builder()
                 .questionId(question.getId())
                 .questionNumber(question.getQuestionNumber())
                 .questionText(question.getQuestionText())
@@ -106,9 +105,9 @@ public class QuizEntityMapper {
     }
 
     /**
-     * Convert Redis DTO back to CivicQuestion
+     * Convert DTO back to CivicQuestion (optional utility method)
      */
-    public CivicQuestion convertFromRedisDto(RedisQuestionDto dto) {
+    public CivicQuestion convertFromQuestionDto(QuestionDto dto) {
         List<QuestionOption> options = dto.getOptions().stream()
                 .map(optionDto -> QuestionOption.builder()
                         .optionLetter(optionDto.getOptionLetter())

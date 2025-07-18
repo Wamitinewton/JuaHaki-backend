@@ -172,7 +172,6 @@ public class OAuth2Controller {
     }
 
 
-
     private String[] generateTokensForUser(User user) {
         log.debug("Generating token pair for user: {}", user.getUsername());
         return jwtHelperService.generateTokenPair(user);

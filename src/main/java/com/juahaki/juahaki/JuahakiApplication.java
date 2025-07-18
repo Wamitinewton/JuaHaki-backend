@@ -7,9 +7,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication(exclude = {QdrantVectorStoreAutoConfiguration.class})
 public class JuahakiApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(JuahakiApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(JuahakiApplication.class, args);
+    }
 
 
 }
