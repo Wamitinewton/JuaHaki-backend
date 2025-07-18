@@ -1,80 +1,38 @@
-You are an expert civic educator creating a diverse daily quiz for Kenyan citizens.
+You are creating a civic knowledge quiz for Kenyan citizens using the Constitution of Kenya 2010.
 
-DIVERSITY REQUIREMENTS:
-1. Use the provided context to create questions from DIFFERENT constitutional sections/articles
-2. Today's focus areas: {focusAreas}
-3. Ensure questions reference SPECIFIC constitutional articles/sections
-4. Cover multiple difficulty levels and diverse scenarios
-5. Include both well-known and lesser-known constitutional provisions
-
-CONTEXT FROM DIFFERENT DOCUMENT SECTIONS:
+CONTEXT:
 {context}
 
-SPECIFIC INSTRUCTIONS:
-- Generate exactly {questionCount} questions
-- Each question MUST reference a specific constitutional article/section
-- Use different chapters: {targetChapters}
-- Include practical, real-world scenarios
-- Mix theoretical knowledge with application
-- Ensure questions are from different document pages/sections
+REQUIREMENTS:
+- Generate exactly {questionCount} multiple-choice questions
+- Focus on: {focusAreas}
+- Mix difficulty levels: {difficultyDistribution}
+- Each question must have 4 options (A, B, C, D)
+- Include specific constitutional article references
+- Questions should test practical understanding, not just memorization
 
-QUESTION DISTRIBUTION:
-- {difficultyDistribution}
-- Cover: {focusAreas}
-- Reference multiple constitutional chapters
+IMPORTANT: Naturally randomize correct answers across all options (A, B, C, D). Do not follow any pattern.
 
-CRITICAL ANSWER DISTRIBUTION REQUIREMENTS:
-You MUST ensure the correct answers are distributed unpredictably across ALL options (A, B, C, D).
+Return JSON format only:
 
-ANSWER RANDOMIZATION STRATEGY:
-- Use the quiz date ({quizDate}) as a randomization seed
-- For each question number, calculate: (question_number + day_of_year) % 4
-- This gives you 0=A, 1=B, 2=C, 3=D for correct answer placement
-- Example calculation for {quizDate}:
-  * Question 1: Correct answer goes to option determined by calculation
-  * Question 2: Correct answer goes to different option based on calculation
-  * Continue this pattern to ensure NO predictable sequence
-
-MANDATORY DISTRIBUTION CHECK:
-- Across all {questionCount} questions, ensure roughly equal distribution
-- No more than 40% of answers should be the same letter
-- If calculation results in too many of same letter, shift some to balance
-- Final distribution should be approximately 25% each for A, B, C, D
-
-ANSWER PLACEMENT RULES:
-1. Calculate the target correct option for each question using date-based randomization
-2. Write the CORRECT answer content in that calculated position
-3. Fill other positions with plausible but incorrect alternatives
-4. Double-check that correct answers are not clustered in same positions
-
-Generate for date: {quizDate}
-
-Return valid JSON only in this exact format:
-{{
-    "title": "Daily Civic Knowledge Quiz - {quizDate}",
-    "description": "Exploring: {focusAreas}",
+{
+    "title": "Daily Civic Quiz - {quizDate}",
+    "description": "Focus: {focusAreas}",
     "questions": [
-        {{
+        {
             "questionNumber": 1,
-            "questionText": "Question with specific scenario and constitutional reference",
-            "category": "Category name",
-            "difficulty": "Easy/Medium/Hard",
+            "questionText": "Clear, practical question with scenario",
+            "category": "Constitutional Rights",
+            "difficulty": "Easy",
             "options": [
-                {{"letter": "A", "text": "Option A text"}},
-                {{"letter": "B", "text": "Option B text"}},
-                {{"letter": "C", "text": "Option C text"}},
-                {{"letter": "D", "text": "Option D text"}}
+                {"letter": "A", "text": "Option A"},
+                {"letter": "B", "text": "Option B"},
+                {"letter": "C", "text": "Option C"},
+                {"letter": "D", "text": "Option D"}
             ],
-            "correctAnswer": "X",
-            "explanation": "Detailed explanation with constitutional reference",
-            "sourceReference": "Article X, Section Y of the Constitution of Kenya 2010"
-        }}
+            "correctAnswer": "B",
+            "explanation": "Brief explanation with Article reference",
+            "sourceReference": "Article X, Constitution of Kenya 2010"
+        }
     ]
-}}
-
-FINAL VERIFICATION:
-Before returning the JSON, verify:
-1. Correct answers are distributed across A, B, C, D without obvious pattern
-2. No more than 3 consecutive questions have same correct letter
-3. Each option (A, B, C, D) appears as correct answer at least once
-4. Distribution is as random and unpredictable as possible
+}

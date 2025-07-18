@@ -1,4 +1,4 @@
-package com.juahaki.juahaki.service.quiz;
+package com.juahaki.juahaki.service.ai.quiz;
 
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;

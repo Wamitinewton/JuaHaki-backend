@@ -1,8 +1,8 @@
 package com.juahaki.juahaki.controller.admin.quiz;
 
 import com.juahaki.juahaki.response.ApiResponse;
-import com.juahaki.juahaki.service.quiz.CivicQuizAIService;
-import com.juahaki.juahaki.service.quiz.ICivicQuizService;
+import com.juahaki.juahaki.service.ai.quiz.CivicQuizAIService;
+import com.juahaki.juahaki.service.ai.quiz.ICivicQuizService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Map;
 
 @RestController

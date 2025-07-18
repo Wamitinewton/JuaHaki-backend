@@ -1,4 +1,4 @@
-package com.juahaki.juahaki.service.quiz;
+package com.juahaki.juahaki.service.ai.quiz;
 
 import com.juahaki.juahaki.dto.quiz.civic.*;
 import jakarta.servlet.http.HttpServletRequest;

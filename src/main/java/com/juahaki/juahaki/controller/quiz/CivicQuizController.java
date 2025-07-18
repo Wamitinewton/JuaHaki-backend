@@ -2,7 +2,7 @@ package com.juahaki.juahaki.controller.quiz;
 
 import com.juahaki.juahaki.dto.quiz.civic.*;
 import com.juahaki.juahaki.response.ApiResponse;
-import com.juahaki.juahaki.service.quiz.ICivicQuizService;
+import com.juahaki.juahaki.service.ai.quiz.ICivicQuizService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

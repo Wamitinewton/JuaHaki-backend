@@ -9,6 +9,7 @@ import com.juahaki.juahaki.model.quiz.*;
 import com.juahaki.juahaki.model.user.User;
 import com.juahaki.juahaki.repository.quiz.*;
 import com.juahaki.juahaki.repository.user.UserRepository;
+import com.juahaki.juahaki.service.ai.quiz.ICivicQuizService;
 import com.juahaki.juahaki.util.jwt.JwtHelperService;
 import com.juahaki.juahaki.util.quiz.QuizSessionBuilder;
 import jakarta.servlet.http.HttpServletRequest;
