@@ -25,10 +25,10 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = true)
+    @Column(nullable = false)
     private String firstName;
 
-    @Column(nullable = true)
+    @Column(nullable = false)
     private String lastName;
 
     @Column(nullable = false, unique = true)
@@ -37,10 +37,10 @@ public class User implements UserDetails {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = true)
+    @Column(nullable = false)
     private String password;
 
-    @Column(nullable = true)
+    @Column(nullable = false)
     private String phoneNumber;
 
     @Column(name = "fcm_token", length = 500)
