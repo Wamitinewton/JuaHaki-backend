@@ -30,9 +30,11 @@ public class DailyQuiz {
     private String description;
 
     @Column(nullable = false)
+    @Builder.Default
     private boolean isActive = true;
 
     @Column(nullable = false)
+    @Builder.Default
     private int totalQuestions = 10;
 
     @Column(nullable = false)

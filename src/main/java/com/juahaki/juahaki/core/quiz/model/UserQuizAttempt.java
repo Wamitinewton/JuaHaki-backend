@@ -40,12 +40,15 @@ public class UserQuizAttempt {
     private int totalQuestions;
 
     @Column(nullable = false)
+    @Builder.Default
     private int questionsAnswered = 0;
 
     @Column(nullable = false)
+    @Builder.Default
     private int correctAnswers = 0;
 
     @Column(nullable = false)
+    @Builder.Default
     private int score = 0; // Percentage
 
     @Column(nullable = false)
@@ -74,7 +77,6 @@ public class UserQuizAttempt {
     }
 
     public boolean isExpired() {
-        // Quiz session expires after 600 minutes of inactivity
         return this.status == QuizStatus.ACTIVE &&
                 LocalDateTime.now().isAfter(this.startedAt.plusMinutes(600));
     }
