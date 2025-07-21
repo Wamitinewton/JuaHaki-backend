@@ -1,7 +1,7 @@
 package com.juahaki.juahaki.core.document.service;
 
-import com.juahaki.juahaki.infrastructure.messaging.storage.dto.firebase.FirebaseFileDto;
-import com.juahaki.juahaki.infrastructure.messaging.storage.firebase.FirebaseStorageService;
+import com.juahaki.juahaki.infrastructure.storage.dto.firebase.FirebaseFileDto;
+import com.juahaki.juahaki.infrastructure.storage.firebase.FirebaseStorageService;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;

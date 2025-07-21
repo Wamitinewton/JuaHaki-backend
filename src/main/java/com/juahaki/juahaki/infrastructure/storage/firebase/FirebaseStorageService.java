@@ -1,8 +1,8 @@
-package com.juahaki.juahaki.infrastructure.messaging.storage.firebase;
+package com.juahaki.juahaki.infrastructure.storage.firebase;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.*;
-import com.juahaki.juahaki.infrastructure.messaging.storage.dto.firebase.FirebaseFileDto;
+import com.juahaki.juahaki.infrastructure.storage.dto.firebase.FirebaseFileDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;

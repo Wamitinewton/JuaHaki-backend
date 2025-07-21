@@ -1,4 +1,4 @@
-package com.juahaki.juahaki.infrastructure.messaging.storage.dto.firebase;
+package com.juahaki.juahaki.infrastructure.storage.dto.firebase;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
