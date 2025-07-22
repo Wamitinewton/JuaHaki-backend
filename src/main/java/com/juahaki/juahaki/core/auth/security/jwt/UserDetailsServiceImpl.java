@@ -1,0 +1,28 @@
+package com.juahaki.juahaki.core.auth.security.jwt;
+
+import com.juahaki.juahaki.core.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class UserDetailsServiceImpl implements UserDetailsService {
+    private final UserRepository userRepository;
+
+    @Override
+    public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
+        return userRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
+
+    @Transactional
+    public UserDetails loadUserById(Long id) throws UsernameNotFoundException {
+
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
+}
