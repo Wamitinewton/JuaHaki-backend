@@ -164,3 +164,10 @@ app:
 
 api:
   prefix: api/v1
+
+aws:
+  accessKeyId: ${aws.access.key}
+  secretKey: ${aws.secret.key}
+  s3:
+    bucket: ${aws.bucket.name}
+  region: ${aws.region}

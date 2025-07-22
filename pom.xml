@@ -34,6 +34,7 @@
         <google-cloud.version>2.52.2</google-cloud.version>
         <qdrant.version>1.11.0</qdrant.version>
         <lombok.version>1.18.30</lombok.version>
+        <amazon.sdk>2.31.78</amazon.sdk>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
     </properties>
@@ -119,6 +120,13 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-oauth2-client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>${amazon.sdk}</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
