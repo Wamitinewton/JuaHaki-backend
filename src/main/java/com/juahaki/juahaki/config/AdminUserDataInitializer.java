@@ -3,6 +3,7 @@ package com.juahaki.juahaki.config;
 import com.juahaki.juahaki.enums.AuthProvider;
 import com.juahaki.juahaki.enums.Role;
 import com.juahaki.juahaki.model.user.User;
+import com.juahaki.juahaki.repository.user.UserQueryRepository;
 import com.juahaki.juahaki.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AdminUserDataInitializer implements ApplicationRunner {
 
     private final UserRepository userRepository;
+    private final UserQueryRepository userQueryRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Value("${app.admin.default.username:admin}")
@@ -56,7 +58,7 @@ public class AdminUserDataInitializer implements ApplicationRunner {
     }
 
     private void initializeDefaultAdminUser() {
-        if (userRepository.existsByRole(Role.ADMIN)) {
+        if (userQueryRepository.existsByRole(Role.ADMIN)) {
             log.info("Admin user already exists, skipping initialization");
             return;
         }

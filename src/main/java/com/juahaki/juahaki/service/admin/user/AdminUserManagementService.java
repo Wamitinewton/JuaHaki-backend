@@ -9,6 +9,7 @@ import com.juahaki.juahaki.exception.CustomException;
 import com.juahaki.juahaki.mapper.AdminUserMapper;
 import com.juahaki.juahaki.model.user.User;
 import com.juahaki.juahaki.repository.user.UserRepository;
+import com.juahaki.juahaki.repository.user.UserQueryRepository; // Add this import
 import com.juahaki.juahaki.service.email.IAccountManagementEmailService;
 import com.juahaki.juahaki.util.jwt.JwtHelperService;
 import jakarta.persistence.criteria.Predicate;
@@ -32,6 +33,7 @@ import java.util.List;
 public class AdminUserManagementService implements IAdminUserManagementService {
 
     private final UserRepository userRepository;
+    private final UserQueryRepository userQueryRepository;
     private final JwtHelperService jwtHelperService;
     private final IAccountManagementEmailService emailService;
     private final AdminUserMapper adminUserMapper;
@@ -173,17 +175,17 @@ public class AdminUserManagementService implements IAdminUserManagementService {
 
         return UserStatsResponse.builder()
                 .totalUsers(userRepository.count())
-                .activeUsers(userRepository.countByIsEnabledTrue())
-                .inactiveUsers(userRepository.countByIsEnabledFalse())
-                .lockedUsers(userRepository.countByIsAccountNonLockedFalse())
-                .unverifiedUsers(userRepository.countByEmailVerifiedFalse())
-                .adminUsers(userRepository.countByRole(Role.ADMIN))
-                .regularUsers(userRepository.countByRole(Role.USER))
-                .oauthUsers(userRepository.countByProviderNot(com.juahaki.juahaki.enums.AuthProvider.LOCAL))
-                .localUsers(userRepository.countByProvider(com.juahaki.juahaki.enums.AuthProvider.LOCAL))
-                .usersCreatedToday(userRepository.countByCreatedAtAfter(startOfDay))
-                .usersCreatedThisWeek(userRepository.countByCreatedAtAfter(startOfWeek))
-                .usersCreatedThisMonth(userRepository.countByCreatedAtAfter(startOfMonth))
+                .activeUsers(userQueryRepository.countByIsEnabledTrue())
+                .inactiveUsers(userQueryRepository.countByIsEnabledFalse())
+                .lockedUsers(userQueryRepository.countByIsAccountNonLockedFalse())
+                .unverifiedUsers(userQueryRepository.countByEmailVerifiedFalse())
+                .adminUsers(userQueryRepository.countByRole(Role.ADMIN))
+                .regularUsers(userQueryRepository.countByRole(Role.USER))
+                .oauthUsers(userQueryRepository.countByProviderNot(com.juahaki.juahaki.enums.AuthProvider.LOCAL))
+                .localUsers(userQueryRepository.countByProvider(com.juahaki.juahaki.enums.AuthProvider.LOCAL))
+                .usersCreatedToday(userQueryRepository.countByCreatedAtAfter(startOfDay))
+                .usersCreatedThisWeek(userQueryRepository.countByCreatedAtAfter(startOfWeek))
+                .usersCreatedThisMonth(userQueryRepository.countByCreatedAtAfter(startOfMonth))
                 .build();
     }
 
@@ -195,7 +197,7 @@ public class AdminUserManagementService implements IAdminUserManagementService {
             return new ArrayList<>();
         }
 
-        List<User> users = userRepository.findBySearchTerm(searchTerm.toLowerCase());
+        List<User> users = userQueryRepository.findBySearchTerm(searchTerm.toLowerCase());
         return adminUserMapper.mapToAdminUserResponseList(users);
     }
 
@@ -203,7 +205,7 @@ public class AdminUserManagementService implements IAdminUserManagementService {
     public List<AdminUserResponse> getRecentlyRegisteredUsers(HttpServletRequest request, int limit) {
         validateAdminAccess(request);
 
-        List<User> users = userRepository.findRecentlyRegisteredUsers(limit);
+        List<User> users = userQueryRepository.findRecentlyRegisteredUsers(limit);
         return adminUserMapper.mapToAdminUserResponseList(users);
     }
 
@@ -212,7 +214,7 @@ public class AdminUserManagementService implements IAdminUserManagementService {
         validateAdminAccess(request);
 
         LocalDateTime cutoffDate = LocalDateTime.now().minusDays(daysSinceLastActivity);
-        List<User> users = userRepository.findInactiveUsers(cutoffDate);
+        List<User> users = userQueryRepository.findInactiveUsers(cutoffDate);
         return adminUserMapper.mapToAdminUserResponseList(users);
     }
 

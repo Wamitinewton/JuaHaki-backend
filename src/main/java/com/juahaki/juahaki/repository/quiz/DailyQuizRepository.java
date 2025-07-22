@@ -10,17 +10,10 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.Optional;
 
+
 @Repository
-public interface DailyQuizRepository extends JpaRepository<DailyQuiz, Long> {
-
+public interface DailyQuizRepository extends JpaRepository<DailyQuiz, Long>, DailyQuizCustomRepository {
     Optional<DailyQuiz> findByQuizDate(LocalDate quizDate);
-
-    @Query("SELECT dq FROM DailyQuiz dq WHERE dq.quizDate = :date AND dq.isActive = true")
-    Optional<DailyQuiz> findActiveQuizByDate(@Param("date") LocalDate date);
-
-    @Query("SELECT dq FROM DailyQuiz dq WHERE dq.quizDate = CURRENT_DATE AND dq.isActive = true")
-    Optional<DailyQuiz> findTodaysActiveQuiz();
-
     boolean existsByQuizDate(LocalDate quizDate);
-
 }
+
