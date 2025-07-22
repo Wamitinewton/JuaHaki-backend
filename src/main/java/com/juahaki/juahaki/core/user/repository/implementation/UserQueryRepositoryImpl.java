@@ -3,6 +3,7 @@ package com.juahaki.juahaki.core.user.repository.implementation;
 
 import com.juahaki.juahaki.core.user.model.User;
 import com.juahaki.juahaki.core.user.repository.UserQueryRepository;
+import com.juahaki.juahaki.shared.enums.AuthProvider;
 import com.juahaki.juahaki.shared.enums.Role;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
