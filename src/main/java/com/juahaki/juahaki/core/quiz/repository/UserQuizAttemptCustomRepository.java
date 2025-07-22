@@ -1,8 +1,9 @@
-package com.juahaki.juahaki.repository.quiz;
+package com.juahaki.juahaki.core.quiz.repository;
 
-import com.juahaki.juahaki.model.quiz.DailyQuiz;
-import com.juahaki.juahaki.model.quiz.UserQuizAttempt;
-import com.juahaki.juahaki.model.user.User;
+
+import com.juahaki.juahaki.core.quiz.model.DailyQuiz;
+import com.juahaki.juahaki.core.quiz.model.UserQuizAttempt;
+import com.juahaki.juahaki.core.user.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

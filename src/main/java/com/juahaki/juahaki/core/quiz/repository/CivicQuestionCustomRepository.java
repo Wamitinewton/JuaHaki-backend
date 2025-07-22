@@ -1,7 +1,9 @@
-package com.juahaki.juahaki.repository.quiz;
+package com.juahaki.juahaki.core.quiz.repository;
 
-import com.juahaki.juahaki.model.quiz.CivicQuestion;
-import com.juahaki.juahaki.model.quiz.DailyQuiz;
+
+
+import com.juahaki.juahaki.core.quiz.model.CivicQuestion;
+import com.juahaki.juahaki.core.quiz.model.DailyQuiz;
 
 import java.util.Optional;
 

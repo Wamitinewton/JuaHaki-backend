@@ -1,8 +1,8 @@
-package com.juahaki.juahaki.repository.quiz.implementation;
+package com.juahaki.juahaki.core.quiz.repository.implementation;
 
 
-import com.juahaki.juahaki.model.quiz.DailyQuiz;
-import com.juahaki.juahaki.repository.quiz.DailyQuizCustomRepository;
+import com.juahaki.juahaki.core.quiz.model.DailyQuiz;
+import com.juahaki.juahaki.core.quiz.repository.DailyQuizCustomRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;

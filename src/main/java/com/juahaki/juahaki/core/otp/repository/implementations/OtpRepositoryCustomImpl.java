@@ -1,8 +1,9 @@
-package com.juahaki.juahaki.repository.otp.implementations;
+package com.juahaki.juahaki.core.otp.repository.implementations;
 
-import com.juahaki.juahaki.enums.OtpType;
-import com.juahaki.juahaki.model.user.User;
-import com.juahaki.juahaki.repository.otp.OtpRepositoryCustom;
+
+import com.juahaki.juahaki.core.otp.repository.OtpRepositoryCustom;
+import com.juahaki.juahaki.core.user.model.User;
+import com.juahaki.juahaki.shared.enums.OtpType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;

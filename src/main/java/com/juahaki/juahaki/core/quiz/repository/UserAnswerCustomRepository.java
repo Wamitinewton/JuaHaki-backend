@@ -1,8 +1,9 @@
-package com.juahaki.juahaki.repository.quiz;
+package com.juahaki.juahaki.core.quiz.repository;
 
 
-import com.juahaki.juahaki.model.quiz.UserAnswer;
-import com.juahaki.juahaki.model.quiz.UserQuizAttempt;
+
+import com.juahaki.juahaki.core.quiz.model.UserAnswer;
+import com.juahaki.juahaki.core.quiz.model.UserQuizAttempt;
 
 import java.util.List;
 

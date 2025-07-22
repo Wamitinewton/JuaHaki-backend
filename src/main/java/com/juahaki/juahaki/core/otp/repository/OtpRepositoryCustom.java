@@ -1,7 +1,9 @@
-package com.juahaki.juahaki.repository.otp;
+package com.juahaki.juahaki.core.otp.repository;
 
-import com.juahaki.juahaki.enums.OtpType;
-import com.juahaki.juahaki.model.user.User;
+
+
+import com.juahaki.juahaki.core.user.model.User;
+import com.juahaki.juahaki.shared.enums.OtpType;
 
 import java.time.LocalDateTime;
 

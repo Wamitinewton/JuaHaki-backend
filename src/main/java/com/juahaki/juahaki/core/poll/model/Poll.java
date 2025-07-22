@@ -40,6 +40,7 @@ public class Poll {
     @Column(nullable = false)
     private PollCategory category;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PollStatus status = PollStatus.DRAFT;

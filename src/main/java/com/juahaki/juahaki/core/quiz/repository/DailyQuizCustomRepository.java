@@ -1,7 +1,8 @@
-package com.juahaki.juahaki.repository.quiz;
+package com.juahaki.juahaki.core.quiz.repository;
 
 
-import com.juahaki.juahaki.model.quiz.DailyQuiz;
+
+import com.juahaki.juahaki.core.quiz.model.DailyQuiz;
 
 import java.time.LocalDate;
 import java.util.Optional;
