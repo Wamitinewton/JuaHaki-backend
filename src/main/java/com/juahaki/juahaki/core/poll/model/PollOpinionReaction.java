@@ -40,7 +40,7 @@ public class PollOpinionReaction {
     private PollOpinion opinion;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId", nullable = true,
+    @JoinColumn(name = "userId",
             foreignKey = @ForeignKey(name = "fk_poll_opinion_reaction_user"))
     private User reactor;
 
@@ -52,7 +52,7 @@ public class PollOpinionReaction {
     @Column(nullable = false)
     private Boolean isAnonymous = false;
 
-    @Column(length = 255)
+    @Column()
     private String reactorFingerprint;
 
     @Column(length = 45)
