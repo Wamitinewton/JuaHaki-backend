@@ -11,12 +11,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface CivicQuestionRepository extends JpaRepository<CivicQuestion, Long> {
-
+public interface CivicQuestionRepository extends JpaRepository<CivicQuestion, Long>, CivicQuestionCustomRepository {
     List<CivicQuestion> findByDailyQuizOrderByQuestionNumber(DailyQuiz dailyQuiz);
-
-    @Query("SELECT cq FROM CivicQuestion cq WHERE cq.dailyQuiz = :dailyQuiz AND cq.questionNumber = :questionNumber")
-    Optional<CivicQuestion> findByQuizAndNumber(@Param("dailyQuiz") DailyQuiz dailyQuiz,
-                                                @Param("questionNumber") int questionNumber);
-
 }

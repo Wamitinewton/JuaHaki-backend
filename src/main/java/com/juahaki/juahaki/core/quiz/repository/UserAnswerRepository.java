@@ -10,11 +10,8 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+
 @Repository
-public interface UserAnswerRepository extends JpaRepository<UserAnswer, Long> {
-
-    @Query("SELECT ua FROM UserAnswer ua WHERE ua.attempt = :attempt ORDER BY ua.question.questionNumber")
-    List<UserAnswer> findByAttemptOrderByQuestionNumber(@Param("attempt") UserQuizAttempt attempt);
-
+public interface UserAnswerRepository extends JpaRepository<UserAnswer, Long>, UserAnswerCustomRepository {
     boolean existsByAttemptAndQuestion(UserQuizAttempt attempt, CivicQuestion question);
 }

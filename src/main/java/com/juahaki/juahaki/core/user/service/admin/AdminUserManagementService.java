@@ -1,9 +1,11 @@
 package com.juahaki.juahaki.core.user.service.admin;
 
+
 import com.juahaki.juahaki.core.user.dto.admin.AdminUserPageResponse;
 import com.juahaki.juahaki.core.user.dto.admin.AdminUserResponse;
 import com.juahaki.juahaki.core.user.dto.admin.UserFilterRequest;
 import com.juahaki.juahaki.core.user.dto.admin.UserStatsResponse;
+import com.juahaki.juahaki.core.user.repository.UserQueryRepository;
 import com.juahaki.juahaki.shared.enums.Role;
 import com.juahaki.juahaki.shared.enums.AuthProvider;
 import com.juahaki.juahaki.shared.exception.CustomException;
@@ -33,6 +35,7 @@ import java.util.List;
 public class AdminUserManagementService implements IAdminUserManagementService {
 
     private final UserRepository userRepository;
+    private final UserQueryRepository userQueryRepository;
     private final JwtHelperService jwtHelperService;
     private final IAccountManagementEmailService emailService;
     private final AdminUserMapper adminUserMapper;
@@ -174,17 +177,28 @@ public class AdminUserManagementService implements IAdminUserManagementService {
 
         return UserStatsResponse.builder()
                 .totalUsers(userRepository.count())
-                .activeUsers(userRepository.countByIsEnabledTrue())
-                .inactiveUsers(userRepository.countByIsEnabledFalse())
-                .lockedUsers(userRepository.countByIsAccountNonLockedFalse())
-                .unverifiedUsers(userRepository.countByEmailVerifiedFalse())
-                .adminUsers(userRepository.countByRole(Role.ADMIN))
-                .regularUsers(userRepository.countByRole(Role.USER))
-                .oauthUsers(userRepository.countByProviderNot(AuthProvider.LOCAL))
-                .localUsers(userRepository.countByProvider(AuthProvider.LOCAL))
-                .usersCreatedToday(userRepository.countByCreatedAtAfter(startOfDay))
-                .usersCreatedThisWeek(userRepository.countByCreatedAtAfter(startOfWeek))
-                .usersCreatedThisMonth(userRepository.countByCreatedAtAfter(startOfMonth))
+                .activeUsers(userQueryRepository.countByIsEnabledTrue())
+                .inactiveUsers(userQueryRepository.countByIsEnabledFalse())
+                .lockedUsers(userQueryRepository.countByIsAccountNonLockedFalse())
+                .unverifiedUsers(userQueryRepository.countByEmailVerifiedFalse())
+                .adminUsers(userQueryRepository.countByRole(Role.ADMIN))
+                .regularUsers(userQueryRepository.countByRole(Role.USER))
+                .oauthUsers(userQueryRepository.countByProviderNot(AuthProvider.LOCAL))
+                .localUsers(userQueryRepository.countByProvider(AuthProvider.LOCAL))
+                .usersCreatedToday(userQueryRepository.countByCreatedAtAfter(startOfDay))
+                .usersCreatedThisWeek(userQueryRepository.countByCreatedAtAfter(startOfWeek))
+                .usersCreatedThisMonth(userQueryRepository.countByCreatedAtAfter(startOfMonth))
+                .activeUsers(userQueryRepository.countByIsEnabledTrue())
+                .inactiveUsers(userQueryRepository.countByIsEnabledFalse())
+                .lockedUsers(userQueryRepository.countByIsAccountNonLockedFalse())
+                .unverifiedUsers(userQueryRepository.countByEmailVerifiedFalse())
+                .adminUsers(userQueryRepository.countByRole(Role.ADMIN))
+                .regularUsers(userQueryRepository.countByRole(Role.USER))
+                .oauthUsers(userQueryRepository.countByProviderNot(AuthProvider.LOCAL))
+                .localUsers(userQueryRepository.countByProvider(AuthProvider.LOCAL))
+                .usersCreatedToday(userQueryRepository.countByCreatedAtAfter(startOfDay))
+                .usersCreatedThisWeek(userQueryRepository.countByCreatedAtAfter(startOfWeek))
+                .usersCreatedThisMonth(userQueryRepository.countByCreatedAtAfter(startOfMonth))
                 .build();
     }
 
@@ -196,7 +210,7 @@ public class AdminUserManagementService implements IAdminUserManagementService {
             return new ArrayList<>();
         }
 
-        List<User> users = userRepository.findBySearchTerm(searchTerm.toLowerCase());
+        List<User> users = userQueryRepository.findBySearchTerm(searchTerm.toLowerCase());
         return adminUserMapper.mapToAdminUserResponseList(users);
     }
 
@@ -204,7 +218,7 @@ public class AdminUserManagementService implements IAdminUserManagementService {
     public List<AdminUserResponse> getRecentlyRegisteredUsers(HttpServletRequest request, int limit) {
         validateAdminAccess(request);
 
-        List<User> users = userRepository.findRecentlyRegisteredUsers(limit);
+        List<User> users = userQueryRepository.findRecentlyRegisteredUsers(limit);
         return adminUserMapper.mapToAdminUserResponseList(users);
     }
 
@@ -213,7 +227,7 @@ public class AdminUserManagementService implements IAdminUserManagementService {
         validateAdminAccess(request);
 
         LocalDateTime cutoffDate = LocalDateTime.now().minusDays(daysSinceLastActivity);
-        List<User> users = userRepository.findInactiveUsers(cutoffDate);
+        List<User> users = userQueryRepository.findInactiveUsers(cutoffDate);
         return adminUserMapper.mapToAdminUserResponseList(users);
     }
 
