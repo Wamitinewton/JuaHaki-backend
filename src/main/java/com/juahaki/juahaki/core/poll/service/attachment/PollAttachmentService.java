@@ -9,7 +9,6 @@ import com.juahaki.juahaki.core.poll.repository.PollOpinionAttachmentRepository;
 import com.juahaki.juahaki.infrastructure.storage.dto.s3.S3FileDto;
 import com.juahaki.juahaki.infrastructure.storage.dto.s3.S3UploadRequest;
 import com.juahaki.juahaki.infrastructure.storage.s3.IS3StorageService;
-import com.juahaki.juahaki.infrastructure.storage.s3.S3StorageService;
 import com.juahaki.juahaki.shared.enums.AttachmentType;
 import com.juahaki.juahaki.shared.exception.CustomException;
 import lombok.RequiredArgsConstructor;
@@ -27,10 +26,9 @@ import java.util.*;
 @Slf4j
 public class PollAttachmentService implements IPollAttachmentService{
 
-    private final IS3StorageService is3StorageService;
+    private final IS3StorageService s3StorageService;
     private final PollAttachmentRepository pollAttachmentRepository;
     private final PollOpinionAttachmentRepository pollOpinionAttachmentRepository;
-    private final S3StorageService s3StorageService;
 
 
     @Value("${app.poll.attachments.max-size:10485760}")
