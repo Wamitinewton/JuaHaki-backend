@@ -92,19 +92,20 @@ public class PollOpinionService implements IPollOpinionService {
     public OpinionResponse updateOpinion(Long opinionId, SubmitOpinionRequest submitOpinionRequest, HttpServletRequest request) {
         log.info("Updating opinion with ID: {}", opinionId);
 
-        // Step 1: Get existing opinion
         PollOpinion existingOpinion = getOpinionById(opinionId);
 
-        // Step 2: Check modification permissions
         validateOpinionModificationPermissions(existingOpinion, request);
 
-        // Step 3: Validate update eligibility
         validateOpinionUpdateEligibility(existingOpinion);
 
-        // Step 4: Update opinion
+        if (submitOpinionRequest.getAttachments() != null && !submitOpinionRequest.getAttachments().isEmpty()) {
+            pollAttachmentService.validateOpinionAttachments(submitOpinionRequest.getAttachments());
+        }
+
+        handleOpinionAttachmentUpdates(existingOpinion, submitOpinionRequest);
+
         pollOpinionMapper.updateOpinion(existingOpinion, submitOpinionRequest);
 
-        // Step 5: Save updated opinion
         PollOpinion updatedOpinion = pollOpinionRepository.save(existingOpinion);
 
         log.info("Opinion updated successfully with ID: {}", updatedOpinion.getId());
@@ -116,19 +117,14 @@ public class PollOpinionService implements IPollOpinionService {
     public void deleteOpinion(Long opinionId, HttpServletRequest request) {
         log.info("Deleting opinion with ID: {}", opinionId);
 
-        // Step 1: Get opinion
         PollOpinion opinion = getOpinionById(opinionId);
 
-        // Step 2: Check deletion permissions
         validateOpinionModificationPermissions(opinion, request);
 
-        // Step 3: Delete attachments
         pollAttachmentService.deleteAllOpinionAttachments(opinion);
 
-        // Step 4: Delete opinion (cascades to reactions)
         pollOpinionRepository.delete(opinion);
 
-        // Step 5: Update poll statistics
         updatePollOpinionCount(opinion.getPoll());
 
         log.info("Opinion deleted successfully with ID: {}", opinionId);
@@ -139,14 +135,11 @@ public class PollOpinionService implements IPollOpinionService {
     public OpinionReactionResponse reactToOpinion(ReactToOpinionRequest reactRequest, HttpServletRequest request) {
         log.info("Reacting to opinion with ID: {}", reactRequest.getOpinionId());
 
-        // Step 1: Get opinion
         PollOpinion opinion = getOpinionById(reactRequest.getOpinionId());
         validateReactionRequest(opinion, reactRequest, request);
 
-        // Step 2: Get reactor (null for anonymous)
         User reactor = getAuthorIfAuthenticated(reactRequest.getIsAnonymous(), request);
 
-        // Step 3: Check for existing reaction
         Optional<PollOpinionReaction> existingReaction = findExistingReaction(opinion, reactor, request);
 
         if (existingReaction.isPresent()) {
@@ -172,11 +165,9 @@ public class PollOpinionService implements IPollOpinionService {
             throw new CustomException("No reaction found to remove");
         }
 
-        // Step 3: Remove reaction
         PollOpinionReaction reaction = existingReaction.get();
         pollOpinionReactionRepository.delete(reaction);
 
-        // Step 4: Update opinion statistics
         updateOpinionReactionStatistics(opinion, reaction.getReactionType().name(), null);
 
         log.info("Reaction removed successfully from opinion ID: {}", opinionId);
@@ -477,6 +468,32 @@ public class PollOpinionService implements IPollOpinionService {
             } catch (Exception e) {
                 return null;
             }
+        }
+    }
+
+
+    private void handleOpinionAttachmentUpdates(PollOpinion existingOpinion, SubmitOpinionRequest submitOpinionRequest) {
+        boolean hasNewAttachments = submitOpinionRequest.getAttachments() != null &&
+                !submitOpinionRequest.getAttachments().isEmpty();
+
+        if (hasNewAttachments) {
+            log.info("Updating attachments for opinion ID: {}", existingOpinion.getId());
+
+            try {
+                int deletedCount = pollAttachmentService.deleteAllOpinionAttachments(existingOpinion);
+                log.info("Deleted {} existing attachments for opinion ID: {}", deletedCount, existingOpinion.getId());
+
+                List<Object> uploadedAttachments = pollAttachmentService.uploadOpinionAttachments(
+                        existingOpinion, submitOpinionRequest.getAttachments());
+                log.info("Uploaded {} new attachments for opinion ID: {}",
+                        uploadedAttachments.size(), existingOpinion.getId());
+
+            } catch (Exception e) {
+                log.error("Error updating attachments for opinion ID: {}", existingOpinion.getId(), e);
+                throw new CustomException("Failed to update opinion attachments: " + e.getMessage());
+            }
+        } else {
+            log.debug("No new attachments provided for opinion ID: {}", existingOpinion.getId());
         }
     }
 }

@@ -22,7 +22,7 @@ public class PollCreationController {
 
     private final IPollCreationService pollCreationService;
 
-    @PostMapping(value = "/create" ,consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse> createPoll(
             @Valid @ModelAttribute CreatePollRequest createPollRequest,
             HttpServletRequest request) {

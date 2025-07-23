@@ -1,5 +1,7 @@
 package com.juahaki.juahaki.core.poll.service.attachment;
 
+import com.juahaki.juahaki.core.poll.dto.attachments.PollAttachmentResponse;
+import com.juahaki.juahaki.core.poll.mapper.PollAttachmentMapper;
 import com.juahaki.juahaki.core.poll.model.Poll;
 import com.juahaki.juahaki.core.poll.model.PollAttachment;
 import com.juahaki.juahaki.core.poll.model.PollOpinion;
@@ -39,6 +41,9 @@ public class PollAttachmentService implements IPollAttachmentService {
     private final IS3StorageService s3StorageService;
     private final PollAttachmentRepository pollAttachmentRepository;
     private final PollOpinionAttachmentRepository pollOpinionAttachmentRepository;
+    private final PollAttachmentMapper pollAttachmentMapper;
+
+
     @Value("${app.poll.attachments.max-size:10485760}")
     private long maxPollAttachmentSize;
     @Value("${app.poll.attachments.max-count:5}")
@@ -78,7 +83,9 @@ public class PollAttachmentService implements IPollAttachmentService {
         log.info("Successfully uploaded {} poll attachments for poll ID: {}",
                 pollAttachments.size(), poll.getId());
 
-        return new ArrayList<>(pollAttachments);
+        List<PollAttachmentResponse> responses = pollAttachmentMapper.toPollAttachmentResponseList(pollAttachments);
+        return new ArrayList<>(responses);
+
     }
 
     @Override
@@ -111,7 +118,8 @@ public class PollAttachmentService implements IPollAttachmentService {
         log.info("Successfully uploaded {} opinion attachments for opinion ID: {}",
                 opinionAttachments.size(), opinion.getId());
 
-        return new ArrayList<>(opinionAttachments);
+        List<PollAttachmentResponse> responses = pollAttachmentMapper.toOpinionAttachmentResponseList(opinionAttachments);
+        return new ArrayList<>(responses);
     }
 
     @Override
@@ -234,7 +242,8 @@ public class PollAttachmentService implements IPollAttachmentService {
         }
 
         List<PollAttachment> attachments = pollAttachmentRepository.findByPollOrderByUploadedAtAsc(poll);
-        return new ArrayList<>(attachments);
+        List<PollAttachmentResponse> responses = pollAttachmentMapper.toPollAttachmentResponseList(attachments);
+        return new ArrayList<>(responses);
     }
 
     @Override
@@ -244,7 +253,8 @@ public class PollAttachmentService implements IPollAttachmentService {
         }
 
         List<PollOpinionAttachment> attachments = pollOpinionAttachmentRepository.findByOpinionOrderByUploadedAtAsc(opinion);
-        return new ArrayList<>(attachments);
+        List<PollAttachmentResponse> responses = pollAttachmentMapper.toOpinionAttachmentResponseList(attachments);
+        return new ArrayList<>(responses);
     }
 
     @Override

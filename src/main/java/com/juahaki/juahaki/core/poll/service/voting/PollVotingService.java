@@ -10,7 +10,6 @@ import com.juahaki.juahaki.core.poll.repository.PollRepository;
 import com.juahaki.juahaki.core.poll.repository.PollVoteRepository;
 import com.juahaki.juahaki.core.user.model.User;
 import com.juahaki.juahaki.core.user.repository.UserRepository;
-import com.juahaki.juahaki.shared.enums.PollStatus;
 import com.juahaki.juahaki.shared.enums.VoteChoice;
 import com.juahaki.juahaki.shared.exception.CustomException;
 import com.juahaki.juahaki.shared.utils.jwt.JwtHelperService;

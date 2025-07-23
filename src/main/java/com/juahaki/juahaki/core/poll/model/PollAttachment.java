@@ -3,6 +3,7 @@ package com.juahaki.juahaki.core.poll.model;
 import com.juahaki.juahaki.shared.enums.AttachmentType;
 import jakarta.persistence.*;
 import lombok.*;
+import net.minidev.json.annotate.JsonIgnore;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -26,6 +27,7 @@ public class PollAttachment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pollId", nullable = false,
             foreignKey = @ForeignKey(name = "fk_poll_attachment_poll"))
+    @JsonIgnore
     private Poll poll;
 
     @Column(nullable = false, length = 255)

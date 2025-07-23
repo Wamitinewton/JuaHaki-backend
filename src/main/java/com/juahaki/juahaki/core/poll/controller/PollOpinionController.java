@@ -43,10 +43,10 @@ public class PollOpinionController {
                 .body(new ApiResponse("Opinion submitted successfully", response));
     }
 
-    @PutMapping("/{opinionId}")
+    @PutMapping(value = "/{opinionId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse> updateOpinion(
             @PathVariable Long opinionId,
-            @Valid @RequestBody SubmitOpinionRequest submitOpinionRequest,
+            @Valid @ModelAttribute SubmitOpinionRequest submitOpinionRequest,
             HttpServletRequest request) {
 
         log.info("Updating opinion with ID: {}", opinionId);

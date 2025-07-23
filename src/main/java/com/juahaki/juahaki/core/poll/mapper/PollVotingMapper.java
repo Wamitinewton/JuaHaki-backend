@@ -72,7 +72,6 @@ public class PollVotingMapper {
     }
 
 
-
     /**
      * Convert PollVote to VoteStatusResponse.
      *
