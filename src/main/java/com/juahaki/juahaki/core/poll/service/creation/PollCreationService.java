@@ -35,19 +35,14 @@ public class PollCreationService implements IPollCreationService {
     public CreatePollResponse createPoll(CreatePollRequest createRequest, HttpServletRequest request) {
         log.info("Creating new poll: {}", createRequest.getTitle());
 
-        // Step 1: Validate request
         validateCreatePollRequest(createRequest, request);
 
-        // Step 2: Get authenticated user
         User creator = getAuthenticatedUser(request);
 
-        // Step 3: Create poll entity
         Poll poll = pollCreationMapper.toEntity(createRequest, creator);
 
-        // Step 4: Save poll
         Poll savedPoll = pollRepository.save(poll);
 
-        // Step 5: Handle attachments if present
         if (createRequest.getAttachments() != null && !createRequest.getAttachments().isEmpty()) {
             pollAttachmentService.uploadPollAttachments(savedPoll, createRequest.getAttachments());
         }
@@ -60,19 +55,14 @@ public class PollCreationService implements IPollCreationService {
     public CreatePollResponse updatePoll(Long pollId, UpdatePollRequest updateRequest, HttpServletRequest request) {
         log.info("Updating poll with ID: {}", pollId);
 
-        // Step 1: Get existing poll
         Poll existingPoll = getPollById(pollId);
 
-        // Step 2: Validate update request
         validateUpdatePollRequest(existingPoll, updateRequest, request);
 
-        // Step 3: Check user permissions
         validateUserPermissions(existingPoll, request);
 
-        // Step 4: Update poll entity
         pollCreationMapper.updateEntity(existingPoll, updateRequest);
 
-        // Step 5: Save updated poll
         Poll updatedPoll = pollRepository.save(existingPoll);
 
         log.info("Poll updated successfully with ID: {}", updatedPoll.getId());
@@ -83,14 +73,11 @@ public class PollCreationService implements IPollCreationService {
     public CreatePollResponse activatePoll(Long pollId, HttpServletRequest request) {
         log.info("Activating poll with ID: {}", pollId);
 
-        // Step 1: Get poll and validate
         Poll poll = getPollById(pollId);
         validatePollForActivation(poll);
 
-        // Step 2: Check user permissions
         validateUserPermissions(poll, request);
 
-        // Step 3: Activate poll
         poll.setStatus(PollStatus.ACTIVE);
         Poll activatedPoll = pollRepository.save(poll);
 
@@ -105,10 +92,8 @@ public class PollCreationService implements IPollCreationService {
         Poll poll = getPollById(pollId);
         validatePollForClosure(poll);
 
-        // Step 2: Check user permissions
         validateUserPermissions(poll, request);
 
-        // Step 3: Close poll
         poll.setStatus(PollStatus.CLOSED);
         Poll closedPoll = pollRepository.save(poll);
 
@@ -120,13 +105,10 @@ public class PollCreationService implements IPollCreationService {
     public void suspendPoll(Long pollId, HttpServletRequest request) {
         log.info("Suspending poll with ID: {}", pollId);
 
-        // Step 1: Get poll
         Poll poll = getPollById(pollId);
 
-        // Step 2: Check admin permissions
         validateAdminPermissions(request);
 
-        // Step 3: Suspend poll
         poll.setStatus(PollStatus.SUSPENDED);
         pollRepository.save(poll);
 

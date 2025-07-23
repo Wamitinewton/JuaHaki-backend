@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -41,12 +43,23 @@ public class S3StorageService implements IS3StorageService {
     @Value("${aws.region}")
     private String awsRegion;
 
+    @Value("${aws.accessKeyId}")
+    private String awsAccessKeyId;
+
+    @Value("${aws.secretKey}")
+    private String awsSecretKey;
+
     @PostConstruct
     private void initializePresigner() {
         try {
+            AwsBasicCredentials awsCredentials = AwsBasicCredentials.create(awsAccessKeyId, awsSecretKey);
+
             s3Presigner = S3Presigner.builder()
                     .region(Region.of(awsRegion))
+                    .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
                     .build();
+
+            log.info("S3 presigner initialized successfully for region: {}", awsRegion);
         } catch (Exception e) {
             log.error("Error initializing S3 presigner", e);
             throw new CustomException("Failed to initialize S3 storage service");
@@ -59,7 +72,6 @@ public class S3StorageService implements IS3StorageService {
             s3Presigner.close();
         }
     }
-
 
     @Override
     public S3FileDto uploadFile(MultipartFile file, S3UploadRequest uploadRequest) {
@@ -280,7 +292,6 @@ public class S3StorageService implements IS3StorageService {
     }
 
     private S3FileDto mapToDto(S3Object s3Object) {
-
         String publicUrl = generatePublicUrl(s3Object.key());
         String presignedUrl = generatePresignedUrl(s3Object.key(), Duration.ofHours(1));
 
