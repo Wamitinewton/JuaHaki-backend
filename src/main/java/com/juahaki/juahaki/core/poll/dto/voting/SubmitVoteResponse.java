@@ -13,8 +13,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SubmitVoteResponse {
-    private Boolean success;
-    private String message;
     private VoteChoice voteChoice;
     private Boolean isAnonymous;
     private LocalDateTime votedAt;

@@ -11,8 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OpinionReactionResponse {
-    private Boolean success;
-    private String message;
     private ReactionType reactionType;
     private Long likesCount;
     private Long dislikesCount;

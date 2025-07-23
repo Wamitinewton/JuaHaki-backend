@@ -130,8 +130,6 @@ public class PollOpinionMapper {
         }
 
         return OpinionReactionResponse.builder()
-                .success(true)
-                .message("Reaction submitted successfully")
                 .reactionType(reaction.getReactionType())
                 .likesCount(opinion.getLikesCount())
                 .dislikesCount(opinion.getDislikesCount())
@@ -152,8 +150,6 @@ public class PollOpinionMapper {
         }
 
         return OpinionReactionResponse.builder()
-                .success(true)
-                .message("Reaction removed successfully")
                 .reactionType(null) // No reaction after removal
                 .likesCount(opinion.getLikesCount())
                 .dislikesCount(opinion.getDislikesCount())
@@ -161,18 +157,6 @@ public class PollOpinionMapper {
                 .build();
     }
 
-    /**
-     * Create error opinion reaction response.
-     *
-     * @param errorMessage the error message
-     * @return error response
-     */
-    public OpinionReactionResponse toReactionErrorResponse(String errorMessage) {
-        return OpinionReactionResponse.builder()
-                .success(false)
-                .message(errorMessage)
-                .build();
-    }
 
     /**
      * Update existing opinion entity with new content from request.
@@ -360,13 +344,7 @@ public class PollOpinionMapper {
             throw new IllegalArgumentException("Original reaction, updated reaction, and opinion cannot be null");
         }
 
-        String message = String.format("Reaction changed from %s to %s successfully",
-                originalReaction.getReactionType().name(),
-                updatedReaction.getReactionType().name());
-
         return OpinionReactionResponse.builder()
-                .success(true)
-                .message(message)
                 .reactionType(updatedReaction.getReactionType())
                 .likesCount(opinion.getLikesCount())
                 .dislikesCount(opinion.getDislikesCount())

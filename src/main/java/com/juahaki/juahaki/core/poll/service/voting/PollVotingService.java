@@ -160,9 +160,7 @@ public class PollVotingService implements IPollVotingService {
 
     @Override
     public boolean isVotingAllowed(Poll poll) {
-        return poll.getStatus() == PollStatus.ACTIVE &&
-                !poll.isExpired() &&
-                poll.isActive();
+        return poll.isActive();
     }
 
     @Override

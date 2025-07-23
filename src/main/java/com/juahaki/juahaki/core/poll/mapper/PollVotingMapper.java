@@ -64,8 +64,6 @@ public class PollVotingMapper {
         SubmitVoteResponse.VoteResultsSummary resultsSummary = buildVoteResultsSummary(poll);
 
         return SubmitVoteResponse.builder()
-                .success(true)
-                .message("Vote submitted successfully")
                 .voteChoice(vote.getVoteChoice())
                 .isAnonymous(vote.getIsAnonymous())
                 .votedAt(vote.getCreatedAt())
@@ -73,18 +71,7 @@ public class PollVotingMapper {
                 .build();
     }
 
-    /**
-     * Create error vote submission response.
-     *
-     * @param errorMessage the error message
-     * @return error response
-     */
-    public SubmitVoteResponse toErrorResponse(String errorMessage) {
-        return SubmitVoteResponse.builder()
-                .success(false)
-                .message(errorMessage)
-                .build();
-    }
+
 
     /**
      * Convert PollVote to VoteStatusResponse.
@@ -190,13 +177,7 @@ public class PollVotingMapper {
 
         SubmitVoteResponse.VoteResultsSummary resultsSummary = buildVoteResultsSummary(poll);
 
-        String message = String.format("Vote changed from %s to %s successfully",
-                originalVote.getVoteChoice().name(),
-                updatedVote.getVoteChoice().name());
-
         return SubmitVoteResponse.builder()
-                .success(true)
-                .message(message)
                 .voteChoice(updatedVote.getVoteChoice())
                 .isAnonymous(updatedVote.getIsAnonymous())
                 .votedAt(updatedVote.getCreatedAt())
@@ -219,8 +200,6 @@ public class PollVotingMapper {
         SubmitVoteResponse.VoteResultsSummary resultsSummary = buildVoteResultsSummary(poll);
 
         return SubmitVoteResponse.builder()
-                .success(true)
-                .message("Vote withdrawn successfully")
                 .voteChoice(null)
                 .isAnonymous(withdrawnVote.getIsAnonymous())
                 .votedAt(null)

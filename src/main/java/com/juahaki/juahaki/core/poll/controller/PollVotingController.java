@@ -34,7 +34,7 @@ public class PollVotingController {
                 .body(new ApiResponse("Vote submitted successfully", response));
     }
 
-    @PutMapping("/vote")
+    @PutMapping("/update/vote")
     public ResponseEntity<ApiResponse> changeVote(
             @Valid @RequestBody SubmitVoteRequest submitVoteRequest,
             HttpServletRequest request) {
