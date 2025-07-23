@@ -147,6 +147,15 @@ app:
         max-pool-size: 10
         queue-capacity: 100
 
+  poll:
+    attachments:
+      max-size: 10485760
+      max-count: 5
+    opinion:
+      attachments:
+        max-size: 5242880
+        max-count: 3
+
   kafka:
     email:
       topic: juahaki.email.events
