@@ -2,12 +2,12 @@ package com.juahaki.juahaki.core.quiz.service.ai;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.juahaki.juahaki.infrastructure.config.QuizConfigurationProperties;
 import com.juahaki.juahaki.core.quiz.mapper.QuizEntityMapper;
 import com.juahaki.juahaki.core.quiz.model.CivicQuestion;
 import com.juahaki.juahaki.core.quiz.model.DailyQuiz;
 import com.juahaki.juahaki.core.quiz.repository.CivicQuestionRepository;
 import com.juahaki.juahaki.core.quiz.repository.DailyQuizRepository;
+import com.juahaki.juahaki.infrastructure.config.QuizConfigurationProperties;
 import com.juahaki.juahaki.shared.utils.quiz.QuizAIBuilder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

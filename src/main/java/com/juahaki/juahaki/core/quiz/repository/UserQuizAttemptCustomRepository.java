@@ -14,12 +14,20 @@ import java.util.Optional;
 
 public interface UserQuizAttemptCustomRepository {
     Optional<UserQuizAttempt> findByUserAndQuizDate(User user, LocalDate date);
+
     Optional<UserQuizAttempt> findByUserAndDailyQuiz(User user, DailyQuiz dailyQuiz);
+
     List<UserQuizAttempt> findExpiredActiveSessions(LocalDateTime cutoffTime);
+
     List<UserQuizAttempt> findLeaderboardByQuiz(DailyQuiz dailyQuiz);
+
     Page<UserQuizAttempt> findLeaderboardByQuiz(DailyQuiz dailyQuiz, Pageable pageable);
+
     long countCompletedAttemptsByQuiz(DailyQuiz dailyQuiz);
+
     long countTotalAttemptsByQuiz(DailyQuiz dailyQuiz);
+
     Double findAverageScoreByQuiz(DailyQuiz dailyQuiz);
+
     List<UserQuizAttempt> findCompletedAttemptsByUser(User user);
 }

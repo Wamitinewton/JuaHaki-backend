@@ -1,15 +1,15 @@
 package com.juahaki.juahaki.core.user.service;
 
-import com.juahaki.juahaki.core.user.dto.notification.NotificationPreferencesRequest;
-import com.juahaki.juahaki.core.user.dto.notification.UpdateFcmTokenRequest;
+import com.juahaki.juahaki.core.otp.service.IOtpService;
 import com.juahaki.juahaki.core.user.dto.UpdatePasswordRequest;
 import com.juahaki.juahaki.core.user.dto.UpdateProfileRequest;
 import com.juahaki.juahaki.core.user.dto.UserInfo;
-import com.juahaki.juahaki.shared.exception.CustomException;
+import com.juahaki.juahaki.core.user.dto.notification.NotificationPreferencesRequest;
+import com.juahaki.juahaki.core.user.dto.notification.UpdateFcmTokenRequest;
 import com.juahaki.juahaki.core.user.model.User;
 import com.juahaki.juahaki.core.user.repository.UserRepository;
 import com.juahaki.juahaki.infrastructure.messaging.email.service.IAccountManagementEmailService;
-import com.juahaki.juahaki.core.otp.service.IOtpService;
+import com.juahaki.juahaki.shared.exception.CustomException;
 import com.juahaki.juahaki.shared.utils.jwt.JwtHelperService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;

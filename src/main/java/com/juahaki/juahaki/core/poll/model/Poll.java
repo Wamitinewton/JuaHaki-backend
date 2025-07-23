@@ -26,36 +26,28 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = false)
 public class Poll {
 
+    @Column(nullable = false)
+    LocalDateTime endDate;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @Column(nullable = false, length = 300)
     private String title;
-
     @Column(columnDefinition = "TEXT")
     private String description;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PollCategory category;
-
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PollStatus status = PollStatus.DRAFT;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "createdBy", nullable = false,
-    foreignKey = @ForeignKey(name = "fk_poll_creator"))
+            foreignKey = @ForeignKey(name = "fk_poll_creator"))
     private User creator;
-
     @Column(nullable = false)
     private LocalDateTime startDate;
-
-    @Column(nullable = false)
-    LocalDateTime endDate;
-
     @Builder.Default
     @Column(nullable = false)
     private Boolean allowAnonymousVoting = true;

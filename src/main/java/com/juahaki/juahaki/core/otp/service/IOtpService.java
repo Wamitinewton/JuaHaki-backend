@@ -1,7 +1,7 @@
 package com.juahaki.juahaki.core.otp.service;
 
-import com.juahaki.juahaki.shared.enums.OtpType;
 import com.juahaki.juahaki.core.user.model.User;
+import com.juahaki.juahaki.shared.enums.OtpType;
 
 public interface IOtpService {
 

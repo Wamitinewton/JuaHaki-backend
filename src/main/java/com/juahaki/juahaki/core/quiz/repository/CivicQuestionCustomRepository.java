@@ -1,7 +1,6 @@
 package com.juahaki.juahaki.core.quiz.repository;
 
 
-
 import com.juahaki.juahaki.core.quiz.model.CivicQuestion;
 import com.juahaki.juahaki.core.quiz.model.DailyQuiz;
 

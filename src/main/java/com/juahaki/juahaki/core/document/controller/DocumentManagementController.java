@@ -1,7 +1,7 @@
 package com.juahaki.juahaki.core.document.controller;
 
-import com.juahaki.juahaki.shared.dto.response.ApiResponse;
 import com.juahaki.juahaki.core.document.service.PdfDocumentProcessingService;
+import com.juahaki.juahaki.shared.dto.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

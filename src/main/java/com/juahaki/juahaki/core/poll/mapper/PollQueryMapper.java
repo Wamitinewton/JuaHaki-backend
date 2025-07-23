@@ -1,9 +1,9 @@
 package com.juahaki.juahaki.core.poll.mapper;
 
+import com.juahaki.juahaki.core.poll.dto.opinions.OpinionResponse;
 import com.juahaki.juahaki.core.poll.dto.results.PollDetailsResponse;
 import com.juahaki.juahaki.core.poll.dto.results.PollListResponse;
 import com.juahaki.juahaki.core.poll.dto.results.PollSummaryResponse;
-import com.juahaki.juahaki.core.poll.dto.opinions.OpinionResponse;
 import com.juahaki.juahaki.core.poll.model.Poll;
 import com.juahaki.juahaki.core.poll.model.PollAttachment;
 import com.juahaki.juahaki.core.poll.model.PollVote;
@@ -27,7 +27,7 @@ public class PollQueryMapper {
     /**
      * Convert Poll entity to PollListResponse for list views.
      *
-     * @param poll the poll entity
+     * @param poll     the poll entity
      * @param userVote the current user's vote (null if not voted)
      * @return poll list response DTO
      */
@@ -57,8 +57,8 @@ public class PollQueryMapper {
     /**
      * Convert Poll entity to PollSummaryResponse for detailed summary views.
      *
-     * @param poll the poll entity
-     * @param userVote the current user's vote (null if not voted)
+     * @param poll           the poll entity
+     * @param userVote       the current user's vote (null if not voted)
      * @param userHasOpinion whether the current user has submitted an opinion
      * @return poll summary response DTO
      */
@@ -95,11 +95,11 @@ public class PollQueryMapper {
     /**
      * Convert Poll entity and additional data to PollDetailsResponse for full detail views.
      *
-     * @param poll the poll entity
-     * @param userVote the current user's vote (null if not voted)
-     * @param userHasOpinion whether the current user has submitted an opinion
-     * @param topOpinions list of top-rated opinions
-     * @param recentOpinions list of recent opinions
+     * @param poll               the poll entity
+     * @param userVote           the current user's vote (null if not voted)
+     * @param userHasOpinion     whether the current user has submitted an opinion
+     * @param topOpinions        list of top-rated opinions
+     * @param recentOpinions     list of recent opinions
      * @param totalOpinionsCount total number of opinions
      * @return poll details response DTO
      */
@@ -183,7 +183,7 @@ public class PollQueryMapper {
     /**
      * Build user participation information for poll responses.
      *
-     * @param userVote the user's vote (null if not voted)
+     * @param userVote       the user's vote (null if not voted)
      * @param userHasOpinion whether the user has submitted an opinion
      * @return user participation DTO
      */
@@ -234,7 +234,7 @@ public class PollQueryMapper {
     /**
      * Determine if a user can vote on a poll.
      *
-     * @param poll the poll entity
+     * @param poll     the poll entity
      * @param userVote the user's existing vote (null if not voted)
      * @return true if the user can vote
      */

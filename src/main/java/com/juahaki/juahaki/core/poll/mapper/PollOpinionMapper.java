@@ -30,12 +30,12 @@ public class PollOpinionMapper {
     /**
      * Convert SubmitOpinionRequest to PollOpinion entity.
      *
-     * @param request the opinion submission request
-     * @param poll the poll the opinion is for
-     * @param author the user submitting the opinion (null for anonymous)
+     * @param request           the opinion submission request
+     * @param poll              the poll the opinion is for
+     * @param author            the user submitting the opinion (null for anonymous)
      * @param authorFingerprint unique identifier for anonymous authors
-     * @param ipAddress author's IP address
-     * @param userAgent author's user agent
+     * @param ipAddress         author's IP address
+     * @param userAgent         author's user agent
      * @return new PollOpinion entity
      */
     public PollOpinion toEntity(SubmitOpinionRequest request, Poll poll, User author,
@@ -61,7 +61,7 @@ public class PollOpinionMapper {
     /**
      * Convert PollOpinion entity to OpinionResponse DTO.
      *
-     * @param opinion the opinion entity
+     * @param opinion             the opinion entity
      * @param currentUserReaction current user's reaction to this opinion (null if none)
      * @return opinion response DTO
      */
@@ -92,12 +92,12 @@ public class PollOpinionMapper {
     /**
      * Convert ReactToOpinionRequest to PollOpinionReaction entity.
      *
-     * @param request the reaction request
-     * @param opinion the opinion being reacted to
-     * @param reactor the user reacting (null for anonymous)
+     * @param request            the reaction request
+     * @param opinion            the opinion being reacted to
+     * @param reactor            the user reacting (null for anonymous)
      * @param reactorFingerprint unique identifier for anonymous reactors
-     * @param ipAddress reactor's IP address
-     * @param userAgent reactor's user agent
+     * @param ipAddress          reactor's IP address
+     * @param userAgent          reactor's user agent
      * @return new PollOpinionReaction entity
      */
     public PollOpinionReaction toReactionEntity(ReactToOpinionRequest request, PollOpinion opinion,
@@ -121,7 +121,7 @@ public class PollOpinionMapper {
      * Create successful opinion reaction response.
      *
      * @param reaction the submitted reaction
-     * @param opinion the updated opinion with current reaction counts
+     * @param opinion  the updated opinion with current reaction counts
      * @return opinion reaction response
      */
     public OpinionReactionResponse toReactionResponse(PollOpinionReaction reaction, PollOpinion opinion) {
@@ -143,7 +143,7 @@ public class PollOpinionMapper {
      * Create opinion reaction removal response.
      *
      * @param removedReaction the reaction that was removed
-     * @param opinion the updated opinion with current reaction counts
+     * @param opinion         the updated opinion with current reaction counts
      * @return opinion reaction response
      */
     public OpinionReactionResponse toReactionRemovalResponse(PollOpinionReaction removedReaction, PollOpinion opinion) {
@@ -178,7 +178,7 @@ public class PollOpinionMapper {
      * Update existing opinion entity with new content from request.
      *
      * @param existingOpinion the opinion to update
-     * @param request the update request
+     * @param request         the update request
      */
     public void updateOpinion(PollOpinion existingOpinion, SubmitOpinionRequest request) {
         if (existingOpinion == null) {
@@ -204,7 +204,7 @@ public class PollOpinionMapper {
      * Update existing reaction entity with new reaction type.
      *
      * @param existingReaction the reaction to update
-     * @param newReactionType the new reaction type
+     * @param newReactionType  the new reaction type
      */
     public void updateReaction(PollOpinionReaction existingReaction, ReactionType newReactionType) {
         if (existingReaction == null) {
@@ -281,7 +281,7 @@ public class PollOpinionMapper {
      * Validate opinion submission request.
      *
      * @param request the opinion request to validate
-     * @param poll the poll the opinion is for
+     * @param poll    the poll the opinion is for
      */
     private void validateOpinionRequest(SubmitOpinionRequest request, Poll poll) {
         if (request == null) {
@@ -349,8 +349,8 @@ public class PollOpinionMapper {
      * Create a response for successful opinion change reaction.
      *
      * @param originalReaction the original reaction
-     * @param updatedReaction the updated reaction
-     * @param opinion the opinion with updated counts
+     * @param updatedReaction  the updated reaction
+     * @param opinion          the opinion with updated counts
      * @return reaction change response
      */
     public OpinionReactionResponse toReactionChangeResponse(PollOpinionReaction originalReaction,

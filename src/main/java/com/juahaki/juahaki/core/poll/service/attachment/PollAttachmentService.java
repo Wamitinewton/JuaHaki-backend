@@ -24,24 +24,7 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class PollAttachmentService implements IPollAttachmentService{
-
-    private final IS3StorageService s3StorageService;
-    private final PollAttachmentRepository pollAttachmentRepository;
-    private final PollOpinionAttachmentRepository pollOpinionAttachmentRepository;
-
-
-    @Value("${app.poll.attachments.max-size:10485760}")
-    private long maxPollAttachmentSize;
-
-    @Value("${app.poll.attachments.max-count:5}")
-    private int maxPollAttachmentCount;
-
-    @Value("${app.opinion.attachments.max-size:5242880}")
-    private long maxOpinionAttachmentSize;
-
-    @Value("${app.opinion.attachments.max-count:3}")
-    private int maxOpinionAttachmentCount;
+public class PollAttachmentService implements IPollAttachmentService {
 
     private static final List<String> SUPPORTED_POLL_TYPES = Arrays.asList(
             "image/jpeg", "image/png", "image/gif", "image/webp",
@@ -49,12 +32,21 @@ public class PollAttachmentService implements IPollAttachmentService{
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             "application/msword"
     );
-
     private static final List<String> SUPPORTED_OPINION_TYPES = Arrays.asList(
             "image/jpeg", "image/png", "image/gif", "image/webp",
             "application/pdf"
     );
-
+    private final IS3StorageService s3StorageService;
+    private final PollAttachmentRepository pollAttachmentRepository;
+    private final PollOpinionAttachmentRepository pollOpinionAttachmentRepository;
+    @Value("${app.poll.attachments.max-size:10485760}")
+    private long maxPollAttachmentSize;
+    @Value("${app.poll.attachments.max-count:5}")
+    private int maxPollAttachmentCount;
+    @Value("${app.opinion.attachments.max-size:5242880}")
+    private long maxOpinionAttachmentSize;
+    @Value("${app.opinion.attachments.max-count:3}")
+    private int maxOpinionAttachmentCount;
 
     @Override
     @Transactional
@@ -156,7 +148,7 @@ public class PollAttachmentService implements IPollAttachmentService{
     }
 
     @Override
-        public boolean deleteOpinionAttachment(Long attachmentId) {
+    public boolean deleteOpinionAttachment(Long attachmentId) {
         if (attachmentId == null) {
             return false;
         }

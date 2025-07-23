@@ -1,8 +1,8 @@
 package com.juahaki.juahaki.shared.utils.jwt;
 
+import com.juahaki.juahaki.core.user.model.User;
 import com.juahaki.juahaki.shared.enums.Role;
 import com.juahaki.juahaki.shared.exception.CustomException;
-import com.juahaki.juahaki.core.user.model.User;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

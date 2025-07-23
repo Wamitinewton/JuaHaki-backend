@@ -20,10 +20,10 @@ public interface IPollVotingService {
      * Implements fraud prevention mechanisms including fingerprinting and IP tracking.
      *
      * @param submitVoteRequest the vote submission request containing poll ID, vote choice, and anonymity preference
-     * @param request the HTTP request to extract user details, IP address, and user agent
+     * @param request           the HTTP request to extract user details, IP address, and user agent
      * @return SubmitVoteResponse containing vote confirmation and updated poll statistics
-     * @throws CustomException if the poll is not found, not active, or voting is not allowed
-     * @throws IllegalStateException if the user has already voted on this poll
+     * @throws CustomException          if the poll is not found, not active, or voting is not allowed
+     * @throws IllegalStateException    if the user has already voted on this poll
      * @throws IllegalArgumentException if the vote request is invalid
      */
     SubmitVoteResponse submitVote(SubmitVoteRequest submitVoteRequest, HttpServletRequest request);
@@ -33,9 +33,9 @@ public interface IPollVotingService {
      * Only allowed if the poll configuration permits vote changes and within allowed timeframe.
      *
      * @param submitVoteRequest the new vote request containing updated vote choice
-     * @param request the HTTP request to extract user authentication details
+     * @param request           the HTTP request to extract user authentication details
      * @return SubmitVoteResponse containing confirmation of vote change and updated statistics
-     * @throws CustomException if vote changing is not allowed or user hasn't voted previously
+     * @throws CustomException       if vote changing is not allowed or user hasn't voted previously
      * @throws IllegalStateException if the change window has expired
      */
     SubmitVoteResponse changeVote(SubmitVoteRequest submitVoteRequest, HttpServletRequest request);
@@ -44,7 +44,7 @@ public interface IPollVotingService {
      * Retrieves the voting status for a user on a specific poll.
      * Shows whether they have voted, their vote choice, and voting timestamp.
      *
-     * @param pollId the unique identifier of the poll
+     * @param pollId  the unique identifier of the poll
      * @param request the HTTP request to extract user authentication details
      * @return VoteStatusResponse containing user's voting status and details
      */
@@ -54,9 +54,9 @@ public interface IPollVotingService {
      * Removes a user's vote from a poll if withdrawal is permitted.
      * This operation is typically restricted and may only be available for a limited time.
      *
-     * @param pollId the unique identifier of the poll
+     * @param pollId  the unique identifier of the poll
      * @param request the HTTP request to extract user authentication details
-     * @throws CustomException if vote withdrawal is not allowed or user hasn't voted
+     * @throws CustomException       if vote withdrawal is not allowed or user hasn't voted
      * @throws IllegalStateException if the withdrawal window has expired
      */
     void withdrawVote(Long pollId, HttpServletRequest request);
@@ -65,11 +65,11 @@ public interface IPollVotingService {
      * Validates a vote submission request against business rules and poll constraints.
      * Checks poll status, voting eligibility, and request validity.
      *
-     * @param poll the poll entity to vote on
+     * @param poll              the poll entity to vote on
      * @param submitVoteRequest the vote request to validate
-     * @param request the HTTP request for additional validation context
+     * @param request           the HTTP request for additional validation context
      * @throws IllegalArgumentException if the vote request is invalid
-     * @throws CustomException if voting is not allowed for this poll/user combination
+     * @throws CustomException          if voting is not allowed for this poll/user combination
      */
     void validateVoteSubmission(Poll poll, SubmitVoteRequest submitVoteRequest, HttpServletRequest request);
 
@@ -77,7 +77,7 @@ public interface IPollVotingService {
      * Checks if a user has already voted on a specific poll.
      * Uses multiple mechanisms including user ID, fingerprint, and IP tracking for anonymous votes.
      *
-     * @param poll the poll entity to check
+     * @param poll    the poll entity to check
      * @param request the HTTP request to extract user identification details
      * @return true if the user has already voted, false otherwise
      */
@@ -105,9 +105,9 @@ public interface IPollVotingService {
      * Updates poll vote counts and statistics after a vote is cast.
      * This method ensures atomicity and consistency of vote tallies.
      *
-     * @param poll the poll entity to update
+     * @param poll               the poll entity to update
      * @param previousVoteChoice the previous vote choice if changing vote (null for new votes)
-     * @param newVoteChoice the new vote choice being cast
+     * @param newVoteChoice      the new vote choice being cast
      */
     void updatePollVoteStatistics(Poll poll, String previousVoteChoice, String newVoteChoice);
 
@@ -115,7 +115,7 @@ public interface IPollVotingService {
      * Validates that a poll accepts the specified voting mode (anonymous/authenticated).
      * Some polls may restrict voting to authenticated users only.
      *
-     * @param poll the poll entity to check
+     * @param poll        the poll entity to check
      * @param isAnonymous whether the vote is being cast anonymously
      * @throws CustomException if the voting mode is not supported by the poll
      */

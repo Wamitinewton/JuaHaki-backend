@@ -25,7 +25,7 @@ public interface IPollQueryService {
      * Retrieves detailed information about a specific poll including voting results and top opinions.
      * Provides comprehensive view suitable for poll detail pages.
      *
-     * @param pollId the unique identifier of the poll
+     * @param pollId  the unique identifier of the poll
      * @param request the HTTP request to extract user context for personalization
      * @return PollDetailsResponse containing poll information, results, and featured opinions
      * @throws CustomException if the poll is not found or user lacks access permission
@@ -36,7 +36,7 @@ public interface IPollQueryService {
      * Retrieves summary information about a specific poll.
      * Provides essential poll data without detailed opinions for list views.
      *
-     * @param pollId the unique identifier of the poll
+     * @param pollId  the unique identifier of the poll
      * @param request the HTTP request to extract user context
      * @return PollSummaryResponse containing poll summary and voting statistics
      * @throws CustomException if the poll is not found
@@ -48,8 +48,8 @@ public interface IPollQueryService {
      * Supports filtering by category, status, creator, date range, and search terms.
      *
      * @param filterRequest the filter criteria including category, status, search terms, etc.
-     * @param pageable pagination and sorting parameters
-     * @param request the HTTP request to extract user context
+     * @param pageable      pagination and sorting parameters
+     * @param request       the HTTP request to extract user context
      * @return Page of PollListResponse objects matching the filter criteria
      */
     Page<PollListResponse> getFilteredPolls(PollFilterRequest filterRequest, Pageable pageable, HttpServletRequest request);
@@ -59,7 +59,7 @@ public interface IPollQueryService {
      * Used for displaying current voting opportunities to users.
      *
      * @param pageable pagination parameters
-     * @param request the HTTP request to extract user context
+     * @param request  the HTTP request to extract user context
      * @return Page of active PollListResponse objects
      */
     Page<PollListResponse> getActivePolls(Pageable pageable, HttpServletRequest request);
@@ -69,7 +69,7 @@ public interface IPollQueryService {
      * Used for user profile pages and poll management interfaces.
      *
      * @param pageable pagination parameters
-     * @param request the HTTP request to extract user authentication details
+     * @param request  the HTTP request to extract user authentication details
      * @return Page of PollListResponse objects created by the authenticated user
      */
     Page<PollListResponse> getUserCreatedPolls(Pageable pageable, HttpServletRequest request);
@@ -79,7 +79,7 @@ public interface IPollQueryService {
      * Helps users track their voting participation history.
      *
      * @param pageable pagination parameters
-     * @param request the HTTP request to extract user authentication details
+     * @param request  the HTTP request to extract user authentication details
      * @return Page of PollListResponse objects the user has participated in
      */
     Page<PollListResponse> getUserVotedPolls(Pageable pageable, HttpServletRequest request);
@@ -90,7 +90,7 @@ public interface IPollQueryService {
      *
      * @param category the poll category to filter by
      * @param pageable pagination and sorting parameters
-     * @param request the HTTP request to extract user context
+     * @param request  the HTTP request to extract user context
      * @return Page of PollListResponse objects in the specified category
      */
     Page<PollListResponse> getPollsByCategory(PollCategory category, Pageable pageable, HttpServletRequest request);
@@ -100,8 +100,8 @@ public interface IPollQueryService {
      * Provides full-text search capabilities across poll content.
      *
      * @param searchTerm the text to search for in poll titles and descriptions
-     * @param pageable pagination and sorting parameters
-     * @param request the HTTP request to extract user context
+     * @param pageable   pagination and sorting parameters
+     * @param request    the HTTP request to extract user context
      * @return Page of PollListResponse objects matching the search criteria
      */
     Page<PollListResponse> searchPolls(String searchTerm, Pageable pageable, HttpServletRequest request);
@@ -110,7 +110,7 @@ public interface IPollQueryService {
      * Retrieves trending or popular polls based on recent activity and engagement.
      * Used for highlighting high-engagement polls on discovery pages.
      *
-     * @param limit the maximum number of trending polls to retrieve
+     * @param limit   the maximum number of trending polls to retrieve
      * @param request the HTTP request to extract user context
      * @return List of trending PollListResponse objects
      */
@@ -119,7 +119,7 @@ public interface IPollQueryService {
     /**
      * Retrieves recently created polls for discovery and timeline features.
      *
-     * @param limit the maximum number of recent polls to retrieve
+     * @param limit   the maximum number of recent polls to retrieve
      * @param request the HTTP request to extract user context
      * @return List of recent PollListResponse objects
      */
@@ -129,8 +129,8 @@ public interface IPollQueryService {
      * Retrieves polls that are expiring soon to encourage last-minute participation.
      *
      * @param hoursUntilExpiry the number of hours to look ahead for expiring polls
-     * @param limit the maximum number of expiring polls to retrieve
-     * @param request the HTTP request to extract user context
+     * @param limit            the maximum number of expiring polls to retrieve
+     * @param request          the HTTP request to extract user context
      * @return List of soon-to-expire PollListResponse objects
      */
     List<PollListResponse> getExpiringPolls(int hoursUntilExpiry, int limit, HttpServletRequest request);
@@ -140,7 +140,7 @@ public interface IPollQueryService {
      * Used for analytics dashboards and reporting interfaces.
      *
      * @param statsRequest the criteria for statistical analysis
-     * @param request the HTTP request to extract user context
+     * @param request      the HTTP request to extract user context
      * @return Map containing various statistical metrics and aggregations
      */
     Map<String, Object> getPollStatistics(PollStatsRequest statsRequest, HttpServletRequest request);
@@ -148,7 +148,7 @@ public interface IPollQueryService {
     /**
      * Retrieves poll participation statistics including vote counts and engagement metrics.
      *
-     * @param pollId the unique identifier of the poll
+     * @param pollId  the unique identifier of the poll
      * @param request the HTTP request to extract user context
      * @return Map containing detailed participation statistics
      */
@@ -159,7 +159,7 @@ public interface IPollQueryService {
      * Checks if a user has access to view a specific poll.
      * Considers poll visibility settings, user permissions, and poll status.
      *
-     * @param pollId the unique identifier of the poll
+     * @param pollId  the unique identifier of the poll
      * @param request the HTTP request to extract user authentication details
      * @return true if the user can view the poll, false otherwise
      */
@@ -170,7 +170,7 @@ public interface IPollQueryService {
      * Gets archived polls for historical analysis and reference.
      *
      * @param pageable pagination parameters
-     * @param request the HTTP request to extract user context
+     * @param request  the HTTP request to extract user context
      * @return Page of archived PollListResponse objects
      */
     Page<PollListResponse> getArchivedPolls(Pageable pageable, HttpServletRequest request);

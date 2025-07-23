@@ -1,8 +1,8 @@
 package com.juahaki.juahaki.infrastructure.messaging.email.controller.admin;
 
 import com.juahaki.juahaki.infrastructure.messaging.email.dto.EmailEvent;
-import com.juahaki.juahaki.shared.dto.response.ApiResponse;
 import com.juahaki.juahaki.infrastructure.messaging.email.service.EmailMonitoringService;
+import com.juahaki.juahaki.shared.dto.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

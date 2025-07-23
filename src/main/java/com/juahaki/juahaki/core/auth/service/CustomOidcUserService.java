@@ -1,11 +1,11 @@
 package com.juahaki.juahaki.core.auth.service;
 
-import com.juahaki.juahaki.shared.enums.AuthProvider;
-import com.juahaki.juahaki.shared.exception.CustomException;
+import com.juahaki.juahaki.core.auth.security.oauth.OAuth2UserPrincipal;
 import com.juahaki.juahaki.core.user.model.User;
 import com.juahaki.juahaki.core.user.repository.UserRepository;
-import com.juahaki.juahaki.core.auth.security.oauth.OAuth2UserPrincipal;
 import com.juahaki.juahaki.infrastructure.messaging.email.service.IAccountManagementEmailService;
+import com.juahaki.juahaki.shared.enums.AuthProvider;
+import com.juahaki.juahaki.shared.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;

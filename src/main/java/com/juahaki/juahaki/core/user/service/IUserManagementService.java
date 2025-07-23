@@ -1,10 +1,10 @@
 package com.juahaki.juahaki.core.user.service;
 
-import com.juahaki.juahaki.core.user.dto.notification.NotificationPreferencesRequest;
-import com.juahaki.juahaki.core.user.dto.notification.UpdateFcmTokenRequest;
 import com.juahaki.juahaki.core.user.dto.UpdatePasswordRequest;
 import com.juahaki.juahaki.core.user.dto.UpdateProfileRequest;
 import com.juahaki.juahaki.core.user.dto.UserInfo;
+import com.juahaki.juahaki.core.user.dto.notification.NotificationPreferencesRequest;
+import com.juahaki.juahaki.core.user.dto.notification.UpdateFcmTokenRequest;
 import com.juahaki.juahaki.core.user.model.User;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.transaction.annotation.Transactional;

@@ -1,7 +1,7 @@
 package com.juahaki.juahaki.core.quiz.model;
 
-import com.juahaki.juahaki.shared.enums.QuizStatus;
 import com.juahaki.juahaki.core.user.model.User;
+import com.juahaki.juahaki.shared.enums.QuizStatus;
 import jakarta.persistence.*;
 import lombok.*;
 

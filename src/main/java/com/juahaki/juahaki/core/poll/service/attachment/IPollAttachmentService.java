@@ -19,11 +19,11 @@ public interface IPollAttachmentService {
      * Upload and associate attachments with a poll during creation.
      * Validates file types, sizes, and stores them in appropriate storage.
      *
-     * @param poll the poll entity to associate attachments with
+     * @param poll        the poll entity to associate attachments with
      * @param attachments list of files to upload
      * @return list of created poll attachment entities
      * @throws IllegalArgumentException if files are invalid or exceed limits
-     * @throws RuntimeException if upload fails
+     * @throws RuntimeException         if upload fails
      */
     List<Object> uploadPollAttachments(Poll poll, List<MultipartFile> attachments);
 
@@ -31,11 +31,11 @@ public interface IPollAttachmentService {
      * Upload and associate attachments with an opinion for evidence or context.
      * Supports images, documents, and other evidence types.
      *
-     * @param opinion the opinion entity to associate attachments with
+     * @param opinion     the opinion entity to associate attachments with
      * @param attachments list of files to upload
      * @return list of created opinion attachment entities
      * @throws IllegalArgumentException if files are invalid or exceed limits
-     * @throws RuntimeException if upload fails
+     * @throws RuntimeException         if upload fails
      */
     List<Object> uploadOpinionAttachments(PollOpinion opinion, List<MultipartFile> attachments);
 
@@ -94,7 +94,7 @@ public interface IPollAttachmentService {
     /**
      * Get attachments by type for a poll (e.g., only images or only documents).
      *
-     * @param poll the poll to get attachments for
+     * @param poll           the poll to get attachments for
      * @param attachmentType the type of attachments to filter by
      * @return list of attachments of the specified type
      */
@@ -103,7 +103,7 @@ public interface IPollAttachmentService {
     /**
      * Get attachments by type for an opinion.
      *
-     * @param opinion the opinion to get attachments for
+     * @param opinion        the opinion to get attachments for
      * @param attachmentType the type of attachments to filter by
      * @return list of attachments of the specified type
      */

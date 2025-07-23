@@ -1,8 +1,8 @@
 package com.juahaki.juahaki.core.auth.controller;
 
+import com.juahaki.juahaki.core.auth.security.oauth.OAuth2UserPrincipal;
 import com.juahaki.juahaki.core.user.model.User;
 import com.juahaki.juahaki.shared.dto.response.ApiResponse;
-import com.juahaki.juahaki.core.auth.security.oauth.OAuth2UserPrincipal;
 import com.juahaki.juahaki.shared.utils.jwt.JwtHelperService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

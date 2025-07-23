@@ -25,12 +25,12 @@ public class PollVotingMapper {
     /**
      * Convert SubmitVoteRequest to PollVote entity.
      *
-     * @param request the vote request
-     * @param poll the poll being voted on
-     * @param voter the user voting (null for anonymous votes)
+     * @param request          the vote request
+     * @param poll             the poll being voted on
+     * @param voter            the user voting (null for anonymous votes)
      * @param voterFingerprint unique identifier for anonymous voters
-     * @param ipAddress voter's IP address
-     * @param userAgent voter's user agent
+     * @param ipAddress        voter's IP address
+     * @param userAgent        voter's user agent
      * @return new PollVote entity
      */
     public PollVote toEntity(SubmitVoteRequest request, Poll poll, User voter,
@@ -110,7 +110,7 @@ public class PollVotingMapper {
     /**
      * Update existing vote entity with new vote choice.
      *
-     * @param existingVote the existing vote to update
+     * @param existingVote  the existing vote to update
      * @param newVoteChoice the new vote choice
      */
     public void updateVoteChoice(PollVote existingVote, VoteChoice newVoteChoice) {
@@ -147,7 +147,7 @@ public class PollVotingMapper {
      * Validate vote submission request.
      *
      * @param request the vote request to validate
-     * @param poll the poll being voted on
+     * @param poll    the poll being voted on
      */
     private void validateVoteRequest(SubmitVoteRequest request, Poll poll) {
         if (request == null) {
@@ -179,8 +179,8 @@ public class PollVotingMapper {
      * Create a response for successful vote change operation.
      *
      * @param originalVote the original vote
-     * @param updatedVote the updated vote
-     * @param poll the poll with updated counts
+     * @param updatedVote  the updated vote
+     * @param poll         the poll with updated counts
      * @return vote change response
      */
     public SubmitVoteResponse toVoteChangeResponse(PollVote originalVote, PollVote updatedVote, Poll poll) {
@@ -208,7 +208,7 @@ public class PollVotingMapper {
      * Create a response for successful vote withdrawal.
      *
      * @param withdrawnVote the vote that was withdrawn
-     * @param poll the poll with updated counts
+     * @param poll          the poll with updated counts
      * @return vote withdrawal response
      */
     public SubmitVoteResponse toVoteWithdrawalResponse(PollVote withdrawnVote, Poll poll) {

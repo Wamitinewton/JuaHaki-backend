@@ -88,7 +88,7 @@ public class PollCreationMapper {
      * Update existing Poll entity with data from UpdatePollRequest.
      *
      * @param existingPoll the poll to update
-     * @param request the update request
+     * @param request      the update request
      */
     public void updateEntity(Poll existingPoll, UpdatePollRequest request) {
         validateUpdateRequest(existingPoll, request);
@@ -184,7 +184,7 @@ public class PollCreationMapper {
      * Validate update poll request.
      *
      * @param existingPoll the existing poll
-     * @param request the update request
+     * @param request      the update request
      */
     private void validateUpdateRequest(Poll existingPoll, UpdatePollRequest request) {
         if (existingPoll == null) {
@@ -226,7 +226,7 @@ public class PollCreationMapper {
     }
 
     /**
-     * @param poll the poll entity
+     * @param poll    the poll entity
      * @param message success message
      * @return simplified response
      */

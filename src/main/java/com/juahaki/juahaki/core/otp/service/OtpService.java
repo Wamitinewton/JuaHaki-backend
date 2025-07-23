@@ -1,12 +1,12 @@
 package com.juahaki.juahaki.core.otp.service;
 
-import com.juahaki.juahaki.shared.enums.OtpType;
-import com.juahaki.juahaki.shared.exception.CustomException;
 import com.juahaki.juahaki.core.otp.model.Otp;
-import com.juahaki.juahaki.core.user.model.User;
 import com.juahaki.juahaki.core.otp.repository.OtpRepository;
+import com.juahaki.juahaki.core.user.model.User;
 import com.juahaki.juahaki.core.user.repository.UserRepository;
 import com.juahaki.juahaki.infrastructure.messaging.email.service.IAccountManagementEmailService;
+import com.juahaki.juahaki.shared.enums.OtpType;
+import com.juahaki.juahaki.shared.exception.CustomException;
 import com.juahaki.juahaki.shared.utils.otp.OtpGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

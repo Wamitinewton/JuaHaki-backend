@@ -41,6 +41,7 @@ public class PollSummaryResponse {
         private String username;
         private String firstName;
     }
+
     @Data
     @Builder
     @NoArgsConstructor

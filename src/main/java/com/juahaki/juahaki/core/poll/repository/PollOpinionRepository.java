@@ -28,6 +28,7 @@ public interface PollOpinionRepository extends JpaRepository<PollOpinion, Long>,
 
     // User opinions
     Page<PollOpinion> findByAuthorOrderByCreatedAtDesc(User author, Pageable pageable);
+
     boolean existsByPollAndAuthor(Poll poll, User author);
 
     // Anonymous vs registered opinions
