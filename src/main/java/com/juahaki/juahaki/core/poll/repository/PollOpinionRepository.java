@@ -7,6 +7,7 @@ import com.juahaki.juahaki.shared.enums.VoteChoice;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -15,7 +16,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface PollOpinionRepository extends JpaRepository<PollOpinion, Long> {
+public interface PollOpinionRepository extends JpaRepository<PollOpinion, Long>, JpaSpecificationExecutor<PollOpinion> {
     List<PollOpinion> findByPoll(Poll poll);
 
     Page<PollOpinion> findByPollOrderByCreatedAtDesc(Poll poll, Pageable pageable);
@@ -26,8 +27,7 @@ public interface PollOpinionRepository extends JpaRepository<PollOpinion, Long> 
     long countByPollAndStance(Poll poll, VoteChoice stance);
 
     // User opinions
-    List<PollOpinion> findByAuthorOrderByCreatedAtDesc(User author);
-
+    Page<PollOpinion> findByAuthorOrderByCreatedAtDesc(User author, Pageable pageable);
     boolean existsByPollAndAuthor(Poll poll, User author);
 
     // Anonymous vs registered opinions

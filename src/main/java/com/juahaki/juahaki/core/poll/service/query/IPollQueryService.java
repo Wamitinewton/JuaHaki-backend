@@ -154,24 +154,6 @@ public interface IPollQueryService {
      */
     Map<String, Object> getPollParticipationStats(Long pollId, HttpServletRequest request);
 
-    /**
-     * Gets category-wise poll distribution and statistics.
-     * Used for category analytics and content strategy insights.
-     *
-     * @param request the HTTP request to extract user context
-     * @return Map containing category distribution and engagement metrics
-     */
-    Map<String, Object> getCategoryStatistics(HttpServletRequest request);
-
-    /**
-     * Retrieves platform-wide poll metrics and system health indicators.
-     * Used for administrative dashboards and system monitoring.
-     *
-     * @param request the HTTP request to extract user authentication details
-     * @return Map containing system-wide poll metrics
-     * @throws CustomException if user lacks administrative privileges
-     */
-    Map<String, Object> getSystemPollMetrics(HttpServletRequest request);
 
     /**
      * Checks if a user has access to view a specific poll.
@@ -183,16 +165,6 @@ public interface IPollQueryService {
      */
     boolean canUserViewPoll(Long pollId, HttpServletRequest request);
 
-    /**
-     * Retrieves polls that require moderation attention.
-     * Used by administrators for content moderation workflows.
-     *
-     * @param pageable pagination parameters
-     * @param request the HTTP request to extract user authentication details
-     * @return Page of polls requiring moderation review
-     * @throws CustomException if user lacks administrative privileges
-     */
-    Page<PollListResponse> getPollsRequiringModeration(Pageable pageable, HttpServletRequest request);
 
     /**
      * Gets archived polls for historical analysis and reference.
