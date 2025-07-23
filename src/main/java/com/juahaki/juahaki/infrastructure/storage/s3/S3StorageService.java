@@ -17,7 +17,6 @@ import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.IOException;
@@ -275,7 +274,6 @@ public class S3StorageService implements IS3StorageService{
         if (!StringUtils.hasText(fileName)) {
             return "file";
         }
-
         int lastDotIndex = fileName.lastIndexOf(".");
         return lastDotIndex > 0 ? fileName.substring(0, lastDotIndex) : fileName;
     }
