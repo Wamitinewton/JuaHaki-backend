@@ -299,7 +299,6 @@ public class PollOpinionService implements IPollOpinionService {
     }
 
     @Override
-    @Transactional
     public void updateOpinionReactionStatistics(PollOpinion opinion, String previousReactionType, String newReactionType) {
         // Decrement previous reaction count
         if (previousReactionType != null) {
