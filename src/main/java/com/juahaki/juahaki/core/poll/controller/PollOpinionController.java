@@ -7,6 +7,7 @@ import com.juahaki.juahaki.core.poll.dto.opinions.ReactToOpinionRequest;
 import com.juahaki.juahaki.core.poll.dto.opinions.SubmitOpinionRequest;
 import com.juahaki.juahaki.core.poll.service.opinion.IPollOpinionService;
 import com.juahaki.juahaki.shared.dto.response.ApiResponse;
+import com.juahaki.juahaki.shared.dto.response.PageResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -142,5 +143,19 @@ public class PollOpinionController {
         Page<OpinionResponse> response = pollOpinionService.getUserOpinions(pageable, request);
 
         return ResponseEntity.ok(new ApiResponse("User opinions retrieved successfully", response));
+    }
+
+
+    @GetMapping("/poll/{pollId}")
+    public ResponseEntity<ApiResponse> getOpinionsByPollId(
+            @PathVariable Long pollId,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+            HttpServletRequest request) {
+
+        log.debug("Getting opinions for poll ID: {}", pollId);
+
+        PageResponse<OpinionResponse> response = pollOpinionService.getOpinionsByPollId(pollId, pageable, request);
+
+        return ResponseEntity.ok(new ApiResponse("Poll opinions retrieved successfully", response));
     }
 }

@@ -16,6 +16,7 @@ import com.juahaki.juahaki.core.poll.repository.PollRepository;
 import com.juahaki.juahaki.core.poll.service.attachment.IPollAttachmentService;
 import com.juahaki.juahaki.core.user.model.User;
 import com.juahaki.juahaki.core.user.repository.UserRepository;
+import com.juahaki.juahaki.shared.dto.response.PageResponse;
 import com.juahaki.juahaki.shared.enums.PollStatus;
 import com.juahaki.juahaki.shared.enums.ReactionType;
 import com.juahaki.juahaki.shared.enums.Role;
@@ -172,6 +173,28 @@ public class PollOpinionService implements IPollOpinionService {
 
         log.info("Reaction removed successfully from opinion ID: {}", opinionId);
         return pollOpinionMapper.toReactionRemovalResponse(reaction, opinion);
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<OpinionResponse> getOpinionsByPollId(Long pollId, Pageable pageable, HttpServletRequest request) {
+        log.debug("Getting opinions for poll ID: {} with pagination", pollId);
+
+        Poll poll = getPollById(pollId);
+
+        User currentUser = getOptionalUser(request);
+
+        Page<PollOpinion> opinionsPage = pollOpinionRepository.findByPollOrderByCreatedAtDesc(poll, pageable);
+
+        List<OpinionResponse> opinionResponses = opinionsPage.getContent().stream()
+                .map(opinion -> {
+                    Boolean userReaction = getUserReactionForOpinion(opinion, currentUser, request);
+                    return pollOpinionMapper.toResponse(opinion, userReaction);
+                })
+                .toList();
+
+        return PageResponse.of(opinionsPage, opinionResponses);
     }
 
     @Override

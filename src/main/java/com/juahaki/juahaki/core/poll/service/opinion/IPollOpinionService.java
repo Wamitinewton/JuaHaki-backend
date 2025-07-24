@@ -7,6 +7,7 @@ import com.juahaki.juahaki.core.poll.dto.opinions.ReactToOpinionRequest;
 import com.juahaki.juahaki.core.poll.dto.opinions.SubmitOpinionRequest;
 import com.juahaki.juahaki.core.poll.model.Poll;
 import com.juahaki.juahaki.core.poll.model.PollOpinion;
+import com.juahaki.juahaki.shared.dto.response.PageResponse;
 import com.juahaki.juahaki.shared.exception.CustomException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
@@ -124,6 +125,19 @@ public interface IPollOpinionService {
      * @return Page of OpinionResponse objects submitted by the authenticated user
      */
     Page<OpinionResponse> getUserOpinions(Pageable pageable, HttpServletRequest request);
+
+
+    /**
+     * Retrieves paginated opinions for a specific poll with reactions included.
+     * Provides clean pagination response without unnecessary Spring Page metadata.
+     *
+     * @param pollId   the unique identifier of the poll
+     * @param pageable pagination and sorting parameters
+     * @param request  the HTTP request to extract user context for reaction data
+     * @return PageResponse containing opinions with reactions and clean pagination info
+     * @throws CustomException if the poll is not found
+     */
+    PageResponse<OpinionResponse> getOpinionsByPollId(Long pollId, Pageable pageable, HttpServletRequest request);
 
     /**
      * Validates opinion submission request including content moderation checks.
